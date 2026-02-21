@@ -1,0 +1,13 @@
+{
+  "name": "mini-social",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:user": "pnpm --filter user-service dev",
+    "dev:auth": "pnpm --filter auth-service dev"
+  }
+}
