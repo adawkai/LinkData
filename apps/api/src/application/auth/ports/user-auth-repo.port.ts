@@ -1,28 +1,11 @@
+import {
+  AuthUserPublic,
+  AuthUserRecord,
+  RegisterInput,
+} from '../models/auth.models';
+
 export interface UserAuthRepoPort {
-  findByEmail(email: string): Promise<{
-    id: string;
-    email: string;
-    username: string;
-    password: string;
-    role: 'USER' | 'ADMIN';
-    isActive: boolean;
-  } | null>;
-  findByUsername(username: string): Promise<{
-    id: string;
-    email: string;
-    username: string;
-    password: string;
-    role: 'USER' | 'ADMIN';
-    isActive: boolean;
-  } | null>;
-  createUser(data: {
-    email: string;
-    username: string;
-    password: string;
-  }): Promise<{
-    id: string;
-    email: string;
-    username: string;
-    role: 'USER' | 'ADMIN';
-  }>;
+  findByEmail(email: string): Promise<AuthUserRecord | null>;
+  findByUsername(username: string): Promise<AuthUserRecord | null>;
+  createUser(data: RegisterInput): Promise<AuthUserPublic>;
 }

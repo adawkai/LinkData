@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { BlockRepoPort } from '../../application/block/ports/block-repo.port';
+import type { BlockKey } from '../../application/_shared/models/ids';
 
 @Injectable()
 export class PrismaBlockRepo implements BlockRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async exists(blockerId: string, blockedId: string) {
+  async exists(params: BlockKey) {
+    const { blockerId, blockedId } = params;
     const row = await this.prisma.block.findUnique({
       where: { blockerId_blockedId: { blockerId, blockedId } },
       select: { blockerId: true },
@@ -14,7 +16,8 @@ export class PrismaBlockRepo implements BlockRepoPort {
     return !!row;
   }
 
-  async blockTx(blockerId: string, blockedId: string) {
+  async blockTx(params: BlockKey) {
+    const { blockerId, blockedId } = params;
     await this.prisma.$transaction(async (tx) => {
       await tx.block.create({ data: { blockerId, blockedId } });
 
@@ -87,7 +90,8 @@ export class PrismaBlockRepo implements BlockRepoPort {
     });
   }
 
-  async unblock(blockerId: string, blockedId: string) {
+  async unblock(params: BlockKey) {
+    const { blockerId, blockedId } = params;
     await this.prisma.block.delete({
       where: { blockerId_blockedId: { blockerId, blockedId } },
     });

@@ -1,34 +1,54 @@
 import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { FollowService } from '../../../application/follow/follow.service';
+import { FollowUserUseCase } from '../../../application/follow/use-cases/follow-user.usecase';
+import { UnfollowUserUseCase } from '../../../application/follow/use-cases/unfollow-user.usecase';
+import { CancelFollowRequestUseCase } from '../../../application/follow/use-cases/cancel-follow-request.usecase';
+import { AcceptFollowRequestUseCase } from '../../../application/follow/use-cases/accept-follow-request.usecase';
+import { RejectFollowRequestUseCase } from '../../../application/follow/use-cases/reject-follow-request.usecase';
 
 @Controller('follow')
 @UseGuards(JwtAuthGuard)
 export class FollowController {
-  constructor(private readonly follow: FollowService) {}
+  constructor(
+    private readonly followUser: FollowUserUseCase,
+    private readonly unfollowUser: UnfollowUserUseCase,
+    private readonly cancelReq: CancelFollowRequestUseCase,
+    private readonly acceptReq: AcceptFollowRequestUseCase,
+    private readonly rejectReq: RejectFollowRequestUseCase,
+  ) {}
 
   @Post()
-  followUser(@Req() req: any, @Body() body: { targetUserId: string }) {
-    return this.follow.follow(req.user.userId, body.targetUserId);
+  follow(@Req() req: any, @Body() body: { targetUserId: string }) {
+    return this.followUser.execute(req.user.userId, {
+      targetUserId: body.targetUserId,
+    });
   }
 
   @Delete()
-  unfollowUser(@Req() req: any, @Body() body: { targetUserId: string }) {
-    return this.follow.unfollow(req.user.userId, body.targetUserId);
+  unfollow(@Req() req: any, @Body() body: { targetUserId: string }) {
+    return this.unfollowUser.execute(req.user.userId, {
+      targetUserId: body.targetUserId,
+    });
   }
 
   @Post('requests/cancel')
   cancel(@Req() req: any, @Body() body: { targetUserId: string }) {
-    return this.follow.cancelRequest(req.user.userId, body.targetUserId);
+    return this.cancelReq.execute(req.user.userId, {
+      targetUserId: body.targetUserId,
+    });
   }
 
   @Post('requests/accept')
   accept(@Req() req: any, @Body() body: { requesterId: string }) {
-    return this.follow.acceptRequest(req.user.userId, body.requesterId);
+    return this.acceptReq.execute(req.user.userId, {
+      requesterId: body.requesterId,
+    });
   }
 
   @Post('requests/reject')
   reject(@Req() req: any, @Body() body: { requesterId: string }) {
-    return this.follow.rejectRequest(req.user.userId, body.requesterId);
+    return this.rejectReq.execute(req.user.userId, {
+      requesterId: body.requesterId,
+    });
   }
 }

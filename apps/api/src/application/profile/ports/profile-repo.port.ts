@@ -1,11 +1,10 @@
+import type { UserId } from '../../_shared/models/ids';
+import type { ProfileView, UpdateProfileInput } from '../models/profile.models';
+
 export interface ProfileRepoPort {
-  getByUserId(userId: string): Promise<{
-    userId: string;
-    name: string | null;
-    avatarUrl: string | null;
-  } | null>;
+  getByUserId(userId: UserId): Promise<ProfileView | null>;
   upsertByUserId(
-    userId: string,
-    data: { name?: string | null; avatarUrl?: string | null },
-  ): Promise<{ userId: string; name: string | null; avatarUrl: string | null }>;
+    userId: UserId,
+    data: UpdateProfileInput,
+  ): Promise<ProfileView>;
 }

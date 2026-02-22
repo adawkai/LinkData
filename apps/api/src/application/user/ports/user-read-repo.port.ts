@@ -1,15 +1,7 @@
-export interface UserReadRepoPort {
-  getMe(userId: string): Promise<{
-    id: string;
-    email: string;
-    username: string;
-    role: 'USER' | 'ADMIN';
-    isPrivate: boolean;
-    isActive: boolean;
-    postCount: number;
-    followersCount: number;
-    followingCount: number;
-  } | null>;
+import type { UserId } from '../../_shared/models/ids';
+import type { UserMe } from '../models/user.models';
 
-  setPrivacy(userId: string, isPrivate: boolean): Promise<void>;
+export interface UserReadRepoPort {
+  getMe(userId: UserId): Promise<UserMe | null>;
+  setPrivacy(userId: UserId, isPrivate: boolean): Promise<void>;
 }

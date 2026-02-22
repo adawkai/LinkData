@@ -5,13 +5,27 @@ import { PrismaModule } from './infrastructure/prisma/prisma.module';
 
 import { TOKENS } from './application/tokens';
 
-// services
-import { AuthService } from './application/auth/auth.service';
-import { UserService } from './application/user/user.service';
-import { ProfileService } from './application/profile/profile.service';
-import { FollowService } from './application/follow/follow.service';
-import { BlockService } from './application/block/block.service';
-import { PostService } from './application/post/post.service';
+// use cases
+import { RegisterUseCase } from './application/auth/use-cases/register.usecase';
+import { LoginUseCase } from './application/auth/use-cases/login.usecase';
+
+import { GetMeUseCase } from './application/user/use-cases/get-me.usecase';
+import { UpdatePrivacyUseCase } from './application/user/use-cases/update-privacy.usecase';
+
+import { GetProfileUseCase } from './application/profile/use-cases/get-profile.usecase';
+import { UpdateProfileUseCase } from './application/profile/use-cases/update-profile.usecase';
+
+import { FollowUserUseCase } from './application/follow/use-cases/follow-user.usecase';
+import { UnfollowUserUseCase } from './application/follow/use-cases/unfollow-user.usecase';
+import { CancelFollowRequestUseCase } from './application/follow/use-cases/cancel-follow-request.usecase';
+import { AcceptFollowRequestUseCase } from './application/follow/use-cases/accept-follow-request.usecase';
+import { RejectFollowRequestUseCase } from './application/follow/use-cases/reject-follow-request.usecase';
+
+import { BlockUserUseCase } from './application/block/use-cases/block-user.usecase';
+import { UnblockUserUseCase } from './application/block/use-cases/unblock-user.usecase';
+
+import { CreatePostUseCase } from './application/post/use-cases/create-post.usecase';
+import { GetFeedUseCase } from './application/post/use-cases/get-feed.usecase';
 
 // infra
 import { PrismaUserRepo } from './infrastructure/repositories/prisma-user.repo';
@@ -53,13 +67,22 @@ import { PostController } from './interfaces/http/controllers/post.controller';
   providers: [
     JwtStrategy,
 
-    // use-cases
-    AuthService,
-    UserService,
-    ProfileService,
-    FollowService,
-    BlockService,
-    PostService,
+    // use cases
+    RegisterUseCase,
+    LoginUseCase,
+    GetMeUseCase,
+    UpdatePrivacyUseCase,
+    GetProfileUseCase,
+    UpdateProfileUseCase,
+    FollowUserUseCase,
+    UnfollowUserUseCase,
+    CancelFollowRequestUseCase,
+    AcceptFollowRequestUseCase,
+    RejectFollowRequestUseCase,
+    BlockUserUseCase,
+    UnblockUserUseCase,
+    CreatePostUseCase,
+    GetFeedUseCase,
 
     // adapters
     { provide: TOKENS.USER_AUTH_REPO, useClass: PrismaUserRepo },

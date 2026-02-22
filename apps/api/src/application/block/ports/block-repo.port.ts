@@ -1,5 +1,7 @@
+import { BlockKey } from 'src/application/_shared/models/ids';
+
 export interface BlockRepoPort {
-  exists(blockerId: string, blockedId: string): Promise<boolean>;
-  blockTx(blockerId: string, blockedId: string): Promise<void>;
-  unblock(blockerId: string, blockedId: string): Promise<void>;
+  exists(params: BlockKey): Promise<boolean>;
+  blockTx(params: BlockKey): Promise<void>;
+  unblock(params: BlockKey): Promise<void>;
 }

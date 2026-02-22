@@ -7,21 +7,26 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { PostService } from '../../../application/post/post.service';
+
 import { CreatePostDto } from '../../../application/post/dto/create-post.dto';
+import { CreatePostUseCase } from 'src/application/post/use-cases/create-post.usecase';
+import { GetFeedUseCase } from 'src/application/post/use-cases/get-feed.usecase';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
 export class PostController {
-  constructor(private readonly posts: PostService) {}
+  constructor(
+    private readonly createPost: CreatePostUseCase,
+    private readonly getFeed: GetFeedUseCase,
+  ) {}
 
   @HttpPost()
   create(@Req() req: any, @Body() dto: CreatePostDto) {
-    return this.posts.create(req.user.userId, dto.content);
+    return this.createPost.execute(req.user.userId, { content: dto.content });
   }
 
   @Get('feed')
   feed(@Req() req: any) {
-    return this.posts.feed(req.user.userId);
+    return this.getFeed.execute(req.user.userId);
   }
 }

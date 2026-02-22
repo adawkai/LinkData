@@ -1,15 +1,10 @@
+import type { PostId, UserId } from '../../_shared/models/ids';
+import type { FeedItem, PostRecord } from '../models/post.models';
+
 export interface PostRepoPort {
   createPostTx(
-    authorId: string,
+    authorId: UserId,
     content: string,
-  ): Promise<{ id: string; content: string; createdAt: Date }>;
-  feed(userId: string): Promise<
-    Array<{
-      id: string;
-      authorId: string;
-      username: string;
-      content: string;
-      createdAt: Date;
-    }>
-  >;
+  ): Promise<Pick<PostRecord, 'id' | 'content' | 'createdAt'>>;
+  feed(userId: UserId): Promise<FeedItem[]>;
 }

@@ -1,19 +1,27 @@
 import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { BlockService } from '../../../application/block/block.service';
+import { BlockUserUseCase } from 'src/application/block/use-cases/block-user.usecase';
+import { UnblockUserUseCase } from 'src/application/block/use-cases/unblock-user.usecase';
 
 @Controller('blocks')
 @UseGuards(JwtAuthGuard)
 export class BlockController {
-  constructor(private readonly blocks: BlockService) {}
+  constructor(
+    private readonly blockUser: BlockUserUseCase,
+    private readonly unBlockUser: UnblockUserUseCase,
+  ) {}
 
   @Post()
   block(@Req() req: any, @Body() body: { targetUserId: string }) {
-    return this.blocks.block(req.user.userId, body.targetUserId);
+    return this.blockUser.execute(req.user.userId, {
+      targetUserId: body.targetUserId,
+    });
   }
 
   @Delete()
   unblock(@Req() req: any, @Body() body: { targetUserId: string }) {
-    return this.blocks.unblock(req.user.userId, body.targetUserId);
+    return this.unBlockUser.execute(req.user.userId, {
+      targetUserId: body.targetUserId,
+    });
   }
 }
