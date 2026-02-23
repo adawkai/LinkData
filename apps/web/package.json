@@ -5,16 +5,34 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "lint": "pnpm typecheck",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.995.0",
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-toast": "^1.2.15",
     "@react-router/node": "7.12.0",
     "@react-router/serve": "7.12.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@social/shared": "workspace:^",
+    "axios": "^1.13.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "isbot": "^5.1.31",
+    "lucide-react": "^0.575.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router": "7.12.0"
+    "react-redux": "^9.2.0",
+    "react-router": "7.12.0",
+    "tailwind-merge": "^3.5.0",
+    "uuid": "^13.0.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@react-router/dev": "7.12.0",

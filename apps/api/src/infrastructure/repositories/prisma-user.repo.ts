@@ -71,6 +71,36 @@ export class PrismaUserRepo
     });
   }
 
+  async getByUsername(username: string) {
+    const u = await this.prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        role: true,
+        isPrivate: true,
+        isActive: true,
+        followersCount: true,
+        followingCount: true,
+        postCount: true,
+        profile: { select: { name: true, avatarUrl: true } },
+      },
+    });
+    if (!u) return null;
+    return {
+      id: u.id,
+      username: u.username,
+      role: u.role,
+      isPrivate: u.isPrivate,
+      isActive: u.isActive,
+      name: u.profile?.name ?? null,
+      avatarUrl: u.profile?.avatarUrl ?? null,
+      followersCount: u.followersCount,
+      followingCount: u.followingCount,
+      postCount: u.postCount,
+    };
+  }
+
   async setPrivacy(userId: string, isPrivate: boolean) {
     await this.prisma.user.update({
       where: { id: userId },

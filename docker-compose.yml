@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: linktree
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  localstack:
+    image: localstack/localstack:3
+    environment:
+      - SERVICES=s3
+      - AWS_DEFAULT_REGION=us-east-1
+      - S3_BUCKET=avatars
+    ports:
+      - "4566:4566"
+    volumes:
+      - ./localstack/init/ready.d:/etc/localstack/init/ready.d
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://admin:admin123@db:5432/linktree
+      JWT_ACCESS_SECRET: dev_jwt_secret_change_me
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/apps/api/node_modules
+    command: >
+      sh -c "pnpm --filter @social/api prisma generate && 
+             pnpm --filter @social/api prisma migrate deploy && 
+             pnpm --filter @social/api start:dev"
+    depends_on:
+      - db
+      - localstack
+
+volumes:
+  db_data:
+

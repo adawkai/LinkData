@@ -16,7 +16,10 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new DomainExceptionFilter());
 
-  app.enableCors({ origin: ['http://localhost:5173'], credentials: true });
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
+  });
 
   await app.listen(3000);
 }

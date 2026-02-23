@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../guards/optional-jwt-auth.guard';
 import { UpdateProfileDtoClass } from '../../../application/profile/dto/update-profile.dto';
 import { GetProfileUseCase } from 'src/application/profile/use-cases/get-profile.usecase';
 import { UpdateProfileUseCase } from 'src/application/profile/use-cases/update-profile.usecase';
@@ -21,6 +22,7 @@ export class ProfileController {
 
   // viewer optional: if no token, only public users are visible.
   // For simplicity, keep it public endpoint and pass viewerId=null when no auth.
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':userId')
   get(@Req() req: any, @Param('userId') userId: string) {
     const viewerId = req.user?.userId ?? null;
