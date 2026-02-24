@@ -20,7 +20,8 @@ export class PrismaPostRepo implements PostRepoPort {
     });
   }
 
-  async feed(userId: string) {
+  async feed(userId: string, cursor?: string, take?: number) {
+    const takeWithExtra = take ? take + 1 : 21;
     // posts by following + self
     const following = await this.prisma.follow.findMany({
       where: { followerId: userId },
@@ -31,6 +32,9 @@ export class PrismaPostRepo implements PostRepoPort {
 
     const posts = await this.prisma.post.findMany({
       where: { authorId: { in: ids } },
+      take: takeWithExtra,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
       select: {
         id: true,
         authorId: true,
@@ -39,15 +43,27 @@ export class PrismaPostRepo implements PostRepoPort {
         author: { select: { username: true } },
       },
       orderBy: { createdAt: 'desc' },
-      take: 50,
     });
 
-    return posts.map((p) => ({
-      id: p.id,
-      authorId: p.authorId,
-      username: p.author.username,
-      content: p.content,
-      createdAt: p.createdAt.toISOString(),
-    }));
+    let nextCursor: string | null = null;
+    const items = [...posts];
+    if (take && items.length > take) {
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
+    } else if (!take && items.length > 20) {
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
+    }
+
+    return {
+      items: items.map((p) => ({
+        id: p.id,
+        authorId: p.authorId,
+        username: p.author.username,
+        content: p.content,
+        createdAt: p.createdAt.toISOString(),
+      })),
+      nextCursor,
+    };
   }
 }

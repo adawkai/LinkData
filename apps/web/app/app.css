@@ -88,8 +88,38 @@
   }
   html {
     font-family: var(--font-sans);
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-muted);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-muted-foreground);
+    border-radius: 10px;
+    border: 2px solid var(--color-muted);
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-foreground);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted-foreground) var(--color-muted);
   }
 }

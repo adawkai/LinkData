@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 import { UpdatePrivacyDtoClass } from '../../../application/user/dto/update-privacy.dto';
 import { GetMeUseCase } from 'src/application/user/use-cases/get-me.usecase';
 import { UpdatePrivacyUseCase } from 'src/application/user/use-cases/update-privacy.usecase';
 import { GetUserByUsernameUseCase } from 'src/application/user/use-cases/get-user-by-username.usecase';
+import { ListUsersUseCase } from 'src/application/user/use-cases/list-user.usecase';
 
 @Controller('users')
 export class UserController {
@@ -12,7 +22,21 @@ export class UserController {
     private readonly getMe: GetMeUseCase,
     private readonly updatePrivacy: UpdatePrivacyUseCase,
     private readonly getByUsername: GetUserByUsernameUseCase,
+    private readonly listUsers: ListUsersUseCase,
   ) {}
+
+  @Get('search')
+  search(
+    @Query('query') query: string,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.listUsers.execute(
+      query || '',
+      cursor,
+      take ? parseInt(take, 10) : undefined,
+    );
+  }
 
   @Get('by-username/:username')
   byUsername(@Param('username') username: string) {

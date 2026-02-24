@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 
 import { Button } from "../../components/ui/button";
@@ -22,15 +22,37 @@ function timeAgo(iso: string) {
 
 export default function FeedRoute() {
   const dispatch = useAppDispatch();
-  const items = useAppSelector((s) => s.feed.items);
-  const status = useAppSelector((s) => s.feed.status);
-  const error = useAppSelector((s) => s.feed.error);
+  const { items, status, error, hasMore, nextCursor } = useAppSelector((s) => s.feed);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    void dispatch(fetchFeed());
-  }, [dispatch]);
+    if (items.length === 0 && status === "idle") {
+      void dispatch(fetchFeed({ reset: true }));
+    }
+  }, [dispatch, items.length, status]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && status === "idle") {
+          void dispatch(fetchFeed({ cursor: nextCursor }));
+        }
+      },
+      { threshold: 1.0 },
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [dispatch, nextCursor, hasMore, status]);
 
   const onPost = async () => {
     const trimmed = content.trim();
@@ -88,8 +110,13 @@ export default function FeedRoute() {
             Your feed is empty. Follow someone and their posts will show up here.
           </p>
         ) : null}
+
+        {status === "loading" && items.length > 0 ? (
+          <p className="py-4 text-center text-sm text-muted-foreground">Loading more posts…</p>
+        ) : null}
+
+        <div ref={observerTarget} className="h-1" />
       </div>
     </div>
   );
 }
-

@@ -7,5 +7,9 @@ export interface PostRepoPort {
     authorId: UserId,
     content: string,
   ): Promise<Pick<PostRecord, 'id' | 'content' | 'createdAt'>>;
-  feed(userId: UserId): Promise<FeedItemRes[]>;
+  feed(
+    userId: UserId,
+    cursor?: string,
+    take?: number,
+  ): Promise<{ items: FeedItemRes[]; nextCursor: string | null }>;
 }

@@ -9,32 +9,47 @@ type FeedState = {
   items: FeedItemRes[];
   status: "idle" | "loading" | "failed";
   error: string | null;
+  nextCursor: string | null;
+  hasMore: boolean;
 };
+
+const PAGE_SIZE = 20;
 
 const initialState: FeedState = {
   items: [],
   status: "idle",
   error: null,
+  nextCursor: null,
+  hasMore: true,
 };
 
-export const fetchFeed = createAsyncThunk<FeedItemRes[]>(
-  "feed/fetch",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await api.get<FeedItemRes[]>("/posts/feed");
-      return res.data;
-    } catch (e) {
-      return rejectWithValue(getApiErrorMessage(e));
-    }
-  },
-);
+type FeedResponse = {
+  items: FeedItemRes[];
+  nextCursor: string | null;
+};
+
+export const fetchFeed = createAsyncThunk<
+  { data: FeedResponse; isReset: boolean },
+  { cursor?: string | null; reset?: boolean } | void
+>("feed/fetch", async (params, { rejectWithValue }) => {
+  try {
+    const cursor = params ? params.cursor : undefined;
+    const reset = params ? params.reset : false;
+    const res = await api.get<FeedResponse>("/posts/feed", {
+      params: { cursor, take: PAGE_SIZE },
+    });
+    return { data: res.data, isReset: !!reset };
+  } catch (e) {
+    return rejectWithValue(getApiErrorMessage(e));
+  }
+});
 
 export const createPost = createAsyncThunk<void, CreatePostDto>(
   "feed/createPost",
   async (dto, { dispatch, rejectWithValue }) => {
     try {
       await api.post("/posts", dto);
-      await dispatch(fetchFeed());
+      await dispatch(fetchFeed({ reset: true }));
     } catch (e) {
       return rejectWithValue(getApiErrorMessage(e));
     }
@@ -49,6 +64,8 @@ const feedSlice = createSlice({
       state.items = [];
       state.status = "idle";
       state.error = null;
+      state.nextCursor = null;
+      state.hasMore = true;
     },
   },
   extraReducers: (builder) => {
@@ -58,8 +75,17 @@ const feedSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchFeed.fulfilled, (state, action) => {
+        const { data, isReset } = action.payload;
+        if (isReset) {
+          state.items = data.items;
+        } else {
+          const existingIds = new Set(state.items.map((p) => p.id));
+          const newItems = data.items.filter((p) => !existingIds.has(p.id));
+          state.items = [...state.items, ...newItems];
+        }
         state.status = "idle";
-        state.items = action.payload;
+        state.nextCursor = data.nextCursor;
+        state.hasMore = data.nextCursor !== null;
       })
       .addCase(fetchFeed.rejected, (state, action) => {
         state.status = "failed";
@@ -81,4 +107,3 @@ const feedSlice = createSlice({
 
 export const { clearFeed } = feedSlice.actions;
 export default feedSlice.reducer;
-

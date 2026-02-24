@@ -12,6 +12,7 @@ import { LoginUseCase } from './application/auth/use-cases/login.usecase';
 import { GetMeUseCase } from './application/user/use-cases/get-me.usecase';
 import { UpdatePrivacyUseCase } from './application/user/use-cases/update-privacy.usecase';
 import { GetUserByUsernameUseCase } from './application/user/use-cases/get-user-by-username.usecase';
+import { ListUsersUseCase } from './application/user/use-cases/list-user.usecase';
 
 import { GetProfileUseCase } from './application/profile/use-cases/get-profile.usecase';
 import { UpdateProfileUseCase } from './application/profile/use-cases/update-profile.usecase';
@@ -73,6 +74,7 @@ import { PostController } from './interfaces/http/controllers/post.controller';
     LoginUseCase,
     GetMeUseCase,
     GetUserByUsernameUseCase,
+    ListUsersUseCase,
     UpdatePrivacyUseCase,
     GetProfileUseCase,
     UpdateProfileUseCase,

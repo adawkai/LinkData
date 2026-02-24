@@ -5,6 +5,7 @@ import meReducer from "../features/me/meSlice";
 import profilesReducer from "../features/profiles/profilesSlice";
 import feedReducer from "../features/feed/feedSlice";
 import relationsReducer from "../features/relations/relationsSlice";
+import usersReducer from "../features/users/usersSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     profiles: profilesReducer,
     feed: feedReducer,
     relations: relationsReducer,
+    users: usersReducer,
   },
 });
 

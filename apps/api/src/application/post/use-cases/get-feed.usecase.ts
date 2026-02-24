@@ -11,7 +11,11 @@ export class GetFeedUseCase {
     private readonly posts: PostRepoPort,
   ) {}
 
-  execute(userId: UserId): Promise<FeedItemRes[]> {
-    return this.posts.feed(userId);
+  execute(
+    userId: UserId,
+    cursor?: string,
+    take?: number,
+  ): Promise<{ items: FeedItemRes[]; nextCursor: string | null }> {
+    return this.posts.feed(userId, cursor, take);
   }
 }

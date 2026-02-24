@@ -13,7 +13,7 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const users = await seedUser(prisma, 10);
+  const users = await seedUser(prisma, 200);
 
   await seedProfile(prisma, users);
 

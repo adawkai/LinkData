@@ -5,6 +5,8 @@ import { UserReadRepoPort } from '../../application/user/ports/user-read-repo.po
 import { UserRelationsPort } from '../../application/follow/ports/user-relations.port';
 import { UserVisibilityPort } from '../../application/profile/ports/user-visibility.port';
 import { PostUserPort } from 'src/application/post/ports/post-user.port';
+import { User } from '@prisma/client';
+import { UserSummaryRes } from 'src/application/_shared/models/user-summary';
 
 @Injectable()
 export class PrismaUserRepo
@@ -106,6 +108,94 @@ export class PrismaUserRepo
       where: { id: userId },
       data: { isPrivate },
     });
+  }
+
+  async listUsers(query: string, cursor?: string, take?: number) {
+    const takeWithExtra = take ? take + 1 : 21;
+    let users: UserSummaryRes[] = [];
+    if (!query) {
+      const res = await this.prisma.user.findMany({
+        take: takeWithExtra,
+        cursor: cursor ? { id: cursor } : undefined,
+        skip: cursor ? 1 : 0,
+        orderBy: { id: 'asc' },
+        select: {
+          id: true,
+          username: true,
+          role: true,
+          isPrivate: true,
+          isActive: true,
+          followersCount: true,
+          followingCount: true,
+          postCount: true,
+          profile: { select: { name: true, avatarUrl: true } },
+        },
+      });
+      users = res.map((u) => ({
+        id: u.id,
+        username: u.username,
+        role: u.role,
+        isPrivate: u.isPrivate,
+        isActive: u.isActive,
+        name: u.profile?.name ?? null,
+        avatarUrl: u.profile?.avatarUrl ?? null,
+        followersCount: u.followersCount,
+        followingCount: u.followingCount,
+        postCount: u.postCount,
+      }));
+    } else {
+      const profiles = await this.prisma.profile.findMany({
+        where: { name: { contains: query, mode: 'insensitive' } },
+        take: takeWithExtra,
+        cursor: cursor ? { id: cursor } : undefined,
+        skip: cursor ? 1 : 0,
+        orderBy: { id: 'asc' },
+        select: {
+          userId: true,
+          name: true,
+          avatarUrl: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+              role: true,
+              isPrivate: true,
+              isActive: true,
+              followersCount: true,
+              followingCount: true,
+              postCount: true,
+            },
+          },
+        },
+      });
+      users = profiles.map((p) => ({
+        id: p.userId,
+        username: p.user.username,
+        role: p.user.role,
+        isPrivate: p.user.isPrivate,
+        isActive: p.user.isActive,
+        name: p.name,
+        avatarUrl: p.avatarUrl,
+        followersCount: p.user.followersCount,
+        followingCount: p.user.followingCount,
+        postCount: p.user.postCount,
+      }));
+    }
+
+    let nextCursor: string | null = null;
+    const items = [...users];
+    if (take && items.length > take) {
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
+    } else if (!take && items.length > 20) {
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
+    }
+
+    return {
+      items,
+      nextCursor,
+    };
   }
 
   // Relations/Visibility

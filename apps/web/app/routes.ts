@@ -4,7 +4,9 @@ export default [
   route("sign-in", "routes/auth/sign-in.tsx"),
   route("sign-up", "routes/auth/sign-up.tsx"),
   route("/", "routes/app/layout.tsx", [
-    index("routes/app/feed.tsx"),
+    index("routes/app/home.tsx"),
+    route("feed", "routes/app/feed.tsx"),
+    route("network", "routes/app/network.tsx"),
     route("onboarding", "routes/app/onboarding.tsx"),
     route("u/:username", "routes/app/profile.tsx"),
     route("settings", "routes/app/settings.tsx"),

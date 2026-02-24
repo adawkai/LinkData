@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router";
-import { LogOut, Settings, User } from "lucide-react";
+import { Home, LogOut, Settings, User, Users } from "lucide-react";
 
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -51,6 +51,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {me ? (
               <>
                 <Link
+                  to="/feed"
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent",
+                    location.pathname.startsWith("/feed") && "bg-accent",
+                  )}
+                >
+                  <Home />
+                </Link>
+                <Link
+                  to="/network"
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent",
+                    location.pathname.startsWith("/network") && "bg-accent",
+                  )}
+                >
+                  <Users />
+                </Link>
+                <Link
                   to={`/u/${me.username}`}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm hover:bg-accent",
@@ -59,9 +77,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 >
                   <Avatar className="h-7 w-7">
                     {myProfile?.avatarUrl ? (
-                      <AvatarImage src={myProfile.avatarUrl} alt={me.username} />
+                      <AvatarImage
+                        src={myProfile.avatarUrl}
+                        alt={me.username}
+                      />
                     ) : null}
-                    <AvatarFallback>{initials(me.username) || "U"}</AvatarFallback>
+                    <AvatarFallback>
+                      {initials(me.username) || "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline">@{me.username}</span>
                 </Link>
@@ -72,7 +95,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Button>
                 </Link>
 
-                <Button variant="ghost" size="icon" onClick={onLogout} aria-label="Logout">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onLogout}
+                  aria-label="Logout"
+                >
                   <LogOut />
                 </Button>
               </>
@@ -94,4 +122,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-

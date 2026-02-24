@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post as HttpPost,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -27,7 +28,15 @@ export class PostController {
   }
 
   @Get('feed')
-  feed(@Req() req: any) {
-    return this.getFeed.execute(req.user.userId);
+  feed(
+    @Req() req: any,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.getFeed.execute(
+      req.user.userId,
+      cursor,
+      take ? parseInt(take, 10) : undefined,
+    );
   }
 }
