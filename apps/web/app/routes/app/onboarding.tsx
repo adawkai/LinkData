@@ -7,7 +7,7 @@ import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { updateMyProfile } from "../../features/profiles/profilesSlice";
+import { updateMyProfile } from "../../features/users/usersSlice";
 import { uploadAvatar } from "../../shared/storage/s3";
 
 function initials(username: string) {
@@ -24,9 +24,8 @@ export default function OnboardingRoute() {
   const navigate = useNavigate();
 
   const me = useAppSelector((s) => s.me.me);
-  const myProfile = useAppSelector((s) => s.profiles.myProfile);
-  const status = useAppSelector((s) => s.profiles.status);
-  const error = useAppSelector((s) => s.profiles.error);
+  const status = useAppSelector((s) => s.users.status);
+  const error = useAppSelector((s) => s.users.error);
 
   const [name, setName] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -34,8 +33,8 @@ export default function OnboardingRoute() {
   const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   useEffect(() => {
-    if (myProfile?.name) setName(myProfile.name);
-  }, [myProfile?.name]);
+    if (me?.name) setName(me.name);
+  }, [me?.name]);
 
   useEffect(() => {
     if (!file) {
@@ -48,14 +47,14 @@ export default function OnboardingRoute() {
   }, [file]);
 
   const currentAvatar = useMemo(() => {
-    return localPreview ?? myProfile?.avatarUrl ?? null;
-  }, [localPreview, myProfile?.avatarUrl]);
+    return localPreview ?? me?.profile?.avatarUrl ?? null;
+  }, [localPreview, me?.profile?.avatarUrl]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!me) return;
 
-    let avatarUrl = myProfile?.avatarUrl ?? null;
+    let avatarUrl = me.profile?.avatarUrl ?? null;
     try {
       if (file) {
         setUploading(true);
@@ -64,7 +63,7 @@ export default function OnboardingRoute() {
       }
       await dispatch(
         updateMyProfile({
-          name: name.trim() || null,
+          name: name.trim() || undefined,
           avatarUrl,
         }),
       ).unwrap();

@@ -4,21 +4,10 @@ import { Link } from "react-router";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Textarea } from "../../components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { createPost, fetchFeed } from "../../features/feed/feedSlice";
-
-function timeAgo(iso: string) {
-  const d = new Date(iso);
-  const s = Math.floor((Date.now() - d.getTime()) / 1000);
-  if (Number.isNaN(s)) return iso;
-  if (s < 60) return `${s}s`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h`;
-  const days = Math.floor(h / 24);
-  return `${days}d`;
-}
+import { PostCard } from "../../features/feed/components/PostCard";
 
 export default function FeedRoute() {
   const dispatch = useAppDispatch();
@@ -89,20 +78,7 @@ export default function FeedRoute() {
         ) : null}
 
         {items.map((p) => (
-          <Card key={p.id}>
-            <CardContent className="space-y-2 p-6">
-              <div className="flex items-center justify-between">
-                <Link
-                  to={`/u/${p.username}`}
-                  className="text-sm font-medium hover:underline"
-                >
-                  @{p.username}
-                </Link>
-                <span className="text-xs text-muted-foreground">{timeAgo(p.createdAt)}</span>
-              </div>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">{p.content}</p>
-            </CardContent>
-          </Card>
+          <PostCard key={p.id} post={p} />
         ))}
 
         {status !== "loading" && items.length === 0 ? (

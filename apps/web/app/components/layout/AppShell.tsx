@@ -7,12 +7,13 @@ import { cn } from "../../lib/utils";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { logout } from "../../features/auth/authSlice";
 import { clearMe } from "../../features/me/meSlice";
-import { clearProfiles } from "../../features/profiles/profilesSlice";
+import { clearEntities } from "../../features/users/usersSlice";
 import { clearFeed } from "../../features/feed/feedSlice";
 import { clearRelations } from "../../features/relations/relationsSlice";
 
-function initials(username: string) {
-  return username
+function initials(name: string, username: string) {
+  const display = name || username;
+  return display
     .split(/[^a-zA-Z0-9]+/g)
     .filter(Boolean)
     .slice(0, 2)
@@ -24,17 +25,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const token = useAppSelector((s) => s.auth.accessToken);
   const me = useAppSelector((s) => s.me.me);
-  const myProfile = useAppSelector((s) => s.profiles.myProfile);
 
   const onLogout = () => {
     dispatch(logout());
     dispatch(clearMe());
-    dispatch(clearProfiles());
+    dispatch(clearEntities());
     dispatch(clearFeed());
     dispatch(clearRelations());
     navigate("/sign-in");
   };
+
+  // If a token exists, never show the sign-in button regardless of meStatus.
+  // layout.tsx handles the 401 case by dispatching logout() + redirecting.
+  const showSkeleton = !!token && !me;
 
   return (
     <div className="min-h-dvh bg-background">
@@ -48,7 +53,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <nav className="flex items-center gap-2">
-            {me ? (
+            {showSkeleton ? (
+              <>
+                <div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
+                <div className="h-8 w-8 animate-pulse rounded-md bg-muted" />
+                <div className="h-8 w-24 animate-pulse rounded-full bg-muted" />
+              </>
+            ) : me ? (
               <>
                 <Link
                   to="/feed"
@@ -76,14 +87,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 >
                   <Avatar className="h-7 w-7">
-                    {myProfile?.avatarUrl ? (
-                      <AvatarImage
-                        src={myProfile.avatarUrl}
-                        alt={me.username}
-                      />
+                    {me.profile?.avatarUrl ? (
+                      <AvatarImage src={me.profile.avatarUrl} alt={me.username} />
                     ) : null}
                     <AvatarFallback>
-                      {initials(me.username) || "U"}
+                      {initials(me.name, me.username) || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline">@{me.username}</span>
@@ -105,20 +113,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Button>
               </>
             ) : (
-              <>
-                <Link to="/sign-in">
-                  <Button variant="ghost" className="gap-2">
-                    <User />
-                    Sign in
-                  </Button>
-                </Link>
-              </>
+              <Link to="/sign-in">
+                <Button variant="ghost" className="gap-2">
+                  <User />
+                  Sign in
+                </Button>
+              </Link>
             )}
           </nav>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-5xl px-4 py-6">
+        {showSkeleton ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

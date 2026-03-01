@@ -14,14 +14,15 @@ export default function SignUpRoute() {
   const status = useAppSelector((s) => s.auth.status);
   const error = useAppSelector((s) => s.auth.error);
   const token = useAppSelector((s) => s.auth.accessToken);
+  const me = useAppSelector((s) => s.me.me);
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    if (token) navigate("/onboarding", { replace: true });
-  }, [token, navigate]);
+    if (token && me) navigate("/onboarding", { replace: true });
+  }, [token, me, navigate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

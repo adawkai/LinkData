@@ -10,6 +10,7 @@ export type FollowRequestDecisionDto = {
 };
 
 // Response (API output)
-export type FollowActionResultRes =
-  | { status: 'FOLLOWING' }
-  | { status: 'REQUESTED' };
+export type FollowActionResultRes = {
+  ok: true;
+  status: 'FOLLOWING' | 'REQUESTED';
+};

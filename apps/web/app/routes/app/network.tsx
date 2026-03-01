@@ -100,8 +100,10 @@ export default function NetworkRoute() {
               <div className="flex items-center gap-3">
                 <Link to={`/u/${user.username}`}>
                   <Avatar className="h-12 w-12 transition-opacity hover:opacity-80">
-                    <AvatarImage src={user.avatarUrl ?? undefined} />
-                    <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+                    <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
+                    <AvatarFallback>
+                      {user.username?.[0]?.toUpperCase() ?? "?"}
+                    </AvatarFallback>
                   </Avatar>
                 </Link>
                 <div className="flex-1 overflow-hidden">

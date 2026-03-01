@@ -1,12 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import type { FeedItemRes } from "@social/shared/models/post";
-import type { CreatePostDto } from "@social/shared/models/post";
-
 import { api, getApiErrorMessage } from "../../shared/api/client";
+import type { Post, CreatePostDto, FeedResponse } from "./types";
 
 type FeedState = {
-  items: FeedItemRes[];
+  items: Post[];
   status: "idle" | "loading" | "failed";
   error: string | null;
   nextCursor: string | null;
@@ -21,11 +19,6 @@ const initialState: FeedState = {
   error: null,
   nextCursor: null,
   hasMore: true,
-};
-
-type FeedResponse = {
-  items: FeedItemRes[];
-  nextCursor: string | null;
 };
 
 export const fetchFeed = createAsyncThunk<
@@ -44,12 +37,12 @@ export const fetchFeed = createAsyncThunk<
   }
 });
 
-export const createPost = createAsyncThunk<void, CreatePostDto>(
+export const createPost = createAsyncThunk<Post, CreatePostDto>(
   "feed/createPost",
-  async (dto, { dispatch, rejectWithValue }) => {
+  async (dto, { rejectWithValue }) => {
     try {
-      await api.post("/posts", dto);
-      await dispatch(fetchFeed({ reset: true }));
+      const res = await api.post<{ ok: boolean; post: Post }>("/posts", dto);
+      return res.data.post;
     } catch (e) {
       return rejectWithValue(getApiErrorMessage(e));
     }
@@ -95,8 +88,10 @@ const feedSlice = createSlice({
         state.status = "loading";
         state.error = null;
       })
-      .addCase(createPost.fulfilled, (state) => {
+      .addCase(createPost.fulfilled, (state, action) => {
         state.status = "idle";
+        // Prepend the new post
+        state.items = [action.payload, ...state.items];
       })
       .addCase(createPost.rejected, (state, action) => {
         state.status = "failed";

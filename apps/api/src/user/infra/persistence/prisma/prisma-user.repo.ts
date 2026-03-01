@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from '../../../domain/entity/user.entity';
-import { UserRepo } from '../../../application/port/user.repo';
+import { UpsertUserType, UserRepo } from '../../../application/port/user.repo';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
 import { UserPrismaMapper, PrismaUser } from './mappers/user.prisma-mapper';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
@@ -11,62 +11,71 @@ import { Username } from '@/user/domain/value-object/username.vo';
 export class PrismaUserRepo implements UserRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async upsert(user: UserEntity): Promise<void> {
+  async upsert(user: UserEntity, type?: UpsertUserType): Promise<void> {
+    if (!type) type = 'USER_AND_PROFILE';
     const existingUser = await this.prisma.user.findUnique({
       where: { id: user.id.toString() },
     });
+    if (type === 'USER_AND_PROFILE' || type === 'USER_ONLY') {
+      const data = {
+        email: user.email.toString(),
+        username: user.username.toString(),
+        name: user.name,
+        passwordHash: user.passwordHash,
+        role: user.role,
+        isPrivate: user.isPrivate,
+        isActive: user.isActive,
+        postCount: user.postCount,
+        followersCount: user.followersCount,
+        followingCount: user.followingCount,
+        updatedAt: user.updatedAt,
+      };
 
-    const data = {
-      email: user.email.toString(),
-      username: user.username.toString(),
-      name: user.name,
-      passwordHash: user.passwordHash,
-      role: user.role,
-      isPrivate: user.isPrivate,
-      isActive: user.isActive,
-      postCount: user.postCount,
-      followersCount: user.followersCount,
-      followingCount: user.followingCount,
-      updatedAt: user.updatedAt,
-    };
-    const profileData = {
-      title: user.profile.title,
-      company: user.profile.company,
-      bio: user.profile.bio,
-      gender: user.profile.gender,
-      website: user.profile.website,
-      birthDate: user.profile.birthDate,
-      location: user.profile.location,
-      contact: user.profile.contact,
-      avatarUrl: user.profile.avatarUrl,
-      updatedAt: user.profile.updatedAt,
-    };
+      if (existingUser) {
+        await this.prisma.user.update({
+          where: { id: user.id.toString() },
+          data,
+        });
+      } else {
+        await this.prisma.user.create({
+          data: {
+            ...data,
+            id: user.id.toString(),
+            createdAt: user.createdAt,
+          },
+        });
+      }
+    }
 
-    if (existingUser) {
-      await this.prisma.user.update({
-        where: { id: user.id.toString() },
-        data,
-      });
-      await this.prisma.profile.update({
-        where: { userId: user.id.toString() },
-        data: profileData,
-      });
-    } else {
-      await this.prisma.user.create({
-        data: {
-          ...data,
-          id: user.id.toString(),
-          createdAt: user.createdAt,
-        },
-      });
-      await this.prisma.profile.create({
-        data: {
-          ...profileData,
-          id: user.profile.id,
-          userId: user.id.toString(),
-          createdAt: user.profile.createdAt,
-        },
-      });
+    if (type === 'USER_AND_PROFILE' || type === 'PROFILE_ONLY') {
+      const profileData = {
+        title: user.profile.title,
+        company: user.profile.company,
+        bio: user.profile.bio,
+        gender: user.profile.gender,
+        website: user.profile.website,
+        birthDate: user.profile.birthDate,
+        location: user.profile.location,
+        contact: user.profile.contact,
+        avatarUrl: user.profile.avatarUrl,
+        updatedAt: user.profile.updatedAt,
+      };
+
+      if (existingUser) {
+        await this.prisma.profile.update({
+          where: { userId: user.id.toString() },
+          data: profileData,
+        });
+      } else {
+        await this.prisma.profile.create({
+          data: {
+            ...profileData,
+            id: user.profile.id,
+            userId: user.id.toString(),
+            createdAt: user.profile.createdAt,
+          },
+        });
+      }
     }
   }
   async findById(id: UserId): Promise<UserEntity | null> {
@@ -185,14 +194,15 @@ export class PrismaUserRepo implements UserRepo {
     return UserPrismaMapper.toDomain(user as unknown as PrismaUser);
   }
   async list(params: {
-    cursor?: string;
-    take: number;
+    pagination: { cursor?: string; take: number };
     query?: string;
   }): Promise<{ items: UserEntity[]; nextCursor: string | null }> {
     const users = await this.prisma.user.findMany({
-      take: params.take ? params.take + 1 : 21,
-      cursor: params.cursor ? { id: params.cursor } : undefined,
-      skip: params.cursor ? 1 : 0,
+      take: params.pagination.take + 1,
+      cursor: params.pagination.cursor
+        ? { id: params.pagination.cursor }
+        : undefined,
+      skip: params.pagination.cursor ? 1 : 0,
       orderBy: { id: 'asc' },
       where: {
         OR: [
@@ -234,7 +244,7 @@ export class PrismaUserRepo implements UserRepo {
     });
     let nextCursor: string | null = null;
 
-    if (users.length > params.take) {
+    if (users.length > params.pagination.take) {
       const nextItem = users.pop();
       nextCursor = nextItem?.id ?? null;
     }

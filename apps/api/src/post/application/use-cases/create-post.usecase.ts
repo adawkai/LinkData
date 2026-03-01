@@ -6,6 +6,8 @@ import type { UserRepo } from '@/user/application/port/user.repo';
 import { UserInactiveError, UserNotFoundError } from '@/user/domain/errors';
 import type { CreatePostBodyDTO } from '@/post/interface/dto/create-post.body.dto';
 import { PostEntity } from '@/post/domain/post.entity';
+import { PostEntityMapper } from '../ports/post.entity-mapper';
+import { CreatePostResponseDTO } from '../../interface/dto/create-post.response.dto';
 
 @Injectable()
 export class CreatePostUseCase {
@@ -16,18 +18,25 @@ export class CreatePostUseCase {
     private readonly userRepo: UserRepo,
   ) {}
 
-  async execute(authorId: UserId, input: CreatePostBodyDTO) {
+  async execute(
+    authorId: UserId,
+    input: CreatePostBodyDTO,
+  ): Promise<CreatePostResponseDTO> {
     const user = await this.userRepo.findById(authorId);
 
     if (!user) throw new UserNotFoundError();
     if (!user.isActive) throw new UserInactiveError();
 
     const post = PostEntity.create({
-      authorId: authorId,
+      author: user,
       content: input.content,
     });
 
     await this.postRepo.create(post);
-    return { ok: true };
+
+    return {
+      ok: true,
+      post: PostEntityMapper.toDTO(post),
+    };
   }
 }

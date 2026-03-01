@@ -6,8 +6,24 @@ import {
   ListUsersResponseDTO,
   UserResponseDTO,
 } from '../../interface/dto/user.response.dto';
+import { UserSummaryRes } from '@social/shared/models/user';
 
 export class UserEntityMapper {
+  static toSummaryDTO(user: UserEntity): UserSummaryRes {
+    return {
+      id: user.id.toString(),
+      username: user.username.toString(),
+      role: user.role,
+      isPrivate: user.isPrivate,
+      isActive: user.isActive,
+      name: user.name,
+      avatarUrl: user.profile.avatarUrl ?? null,
+      followersCount: user.followersCount,
+      followingCount: user.followingCount,
+      postCount: user.postCount,
+    };
+  }
+
   static toDTO(user: UserEntity): UserResponseDTO {
     return {
       id: user.id.toString(),

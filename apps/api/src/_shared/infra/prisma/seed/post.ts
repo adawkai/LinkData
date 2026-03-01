@@ -1,24 +1,41 @@
 import { faker } from '@faker-js/faker';
 import { PrismaClient } from '@prisma/client';
-
-import { PostRecord } from 'src/application/post/models/post.models';
-import { UserRecord } from 'src/application/user/models/user.models';
+import { UserEntity } from '@/user/domain/entity/user.entity';
+import { PostEntity } from '@/post/domain/post.entity';
 
 export const seedPost = async (
   prisma: PrismaClient,
-  users: UserRecord[],
+  users: UserEntity[],
   postCount = 2,
 ) => {
-  const posts: PostRecord[] = [];
+  const posts: PostEntity[] = [];
   for (const user of users) {
     for (let i = 0; i < postCount; i++) {
-      const post = await prisma.post.create({
-        data: {
-          authorId: user.id,
-          content: faker.lorem.sentence(),
-        },
+      const content = faker.lorem.sentence();
+      const post = PostEntity.create({
+        author: user,
+        content,
       });
       posts.push(post);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.post.create({
+          data: {
+            id: post.id.toString(),
+            authorId: post.authorId.toString(),
+            content: post.content,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+          },
+        });
+
+        await tx.user.update({
+          where: { id: user.id.toString() },
+          data: {
+            postCount: { increment: 1 },
+          },
+        });
+      });
     }
   }
   return posts;

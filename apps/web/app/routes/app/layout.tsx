@@ -4,12 +4,10 @@ import { Outlet, useLocation, useNavigate } from "react-router";
 import { RequireAuth } from "../../components/auth/RequireAuth";
 import { AppShell } from "../../components/layout/AppShell";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { logout } from "../../features/auth/authSlice";
 import { fetchMe } from "../../features/me/meSlice";
-import { fetchProfileByUserId } from "../../features/profiles/profilesSlice";
 
-function isProfileComplete(profile: { name: string | null } | null) {
-  return !!profile?.name;
+function isProfileComplete(user: { name: string | null } | null) {
+  return !!user?.name;
 }
 
 export default function AppLayoutRoute() {
@@ -20,8 +18,6 @@ export default function AppLayoutRoute() {
   const token = useAppSelector((s) => s.auth.accessToken);
   const me = useAppSelector((s) => s.me.me);
   const meStatus = useAppSelector((s) => s.me.status);
-  const meError = useAppSelector((s) => s.me.error);
-  const myProfile = useAppSelector((s) => s.profiles.myProfile);
 
   // Load /users/me when we have a token (important after refresh)
   useEffect(() => {
@@ -29,29 +25,21 @@ export default function AppLayoutRoute() {
     if (!me && meStatus === "idle") void dispatch(fetchMe());
   }, [token, me, meStatus, dispatch]);
 
-  // If token is invalid, API returns 401; make that a clean logout.
+  // If fetching user fails for any reason, redirect to sign-in but keep the token
   useEffect(() => {
-    if (!token) return;
-    if (meStatus === "failed" && meError?.toLowerCase().includes("401")) {
-      dispatch(logout());
-      navigate("/sign-in", { replace: true });
-    }
-  }, [token, meStatus, meError, dispatch, navigate]);
+    if (!token || meStatus !== "failed") return;
+    const next = `${location.pathname}${location.search}${location.hash}`;
+    navigate(`/sign-in?next=${encodeURIComponent(next)}`, { replace: true });
+  }, [token, meStatus, navigate, location]);
 
-  // Load my profile (for onboarding + avatar in navbar)
+  // Onboarding redirect (only after user data is loaded)
   useEffect(() => {
-    if (!token || !me) return;
-    if (!myProfile) void dispatch(fetchProfileByUserId({ userId: me.id, asMyProfile: true }));
-  }, [token, me, myProfile, dispatch]);
-
-  // Onboarding redirect (only after profile is loaded)
-  useEffect(() => {
-    if (!token || !me || !myProfile) return;
+    if (!token || !me || meStatus !== "idle") return;
     const inOnboarding = location.pathname.startsWith("/onboarding");
-    if (!inOnboarding && !isProfileComplete(myProfile)) {
+    if (!inOnboarding && !isProfileComplete(me)) {
       navigate("/onboarding", { replace: true });
     }
-  }, [token, me, myProfile, location.pathname, navigate]);
+  }, [token, me, meStatus, location.pathname, navigate]);
 
   return (
     <RequireAuth>
@@ -61,4 +49,3 @@ export default function AppLayoutRoute() {
     </RequireAuth>
   );
 }
-

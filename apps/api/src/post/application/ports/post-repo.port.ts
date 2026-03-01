@@ -10,4 +10,11 @@ export interface PostRepo {
       take?: number;
     },
   ): Promise<{ items: PostEntity[]; nextCursor: string | null }>;
+  findByAuthorId(
+    authorId: UserId,
+    pagination?: {
+      cursor?: string;
+      take?: number;
+    },
+  ): Promise<{ items: PostEntity[]; nextCursor: string | null }>;
 }

@@ -1,11 +1,8 @@
+import { UserResponseDTO } from './user.response.dto';
+
 export type UserRegisterResponseDTO = {
   accessToken: string;
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    role: 'USER' | 'ADMIN' | 'MODERATOR';
-  };
+  user: UserResponseDTO;
 };
 
 export type UserRegisterErrorResponseDTO = {

@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-import type { AuthRes, LoginDto, RegisterDto } from "@social/shared/models/auth";
+import type { LoginDto, RegisterDto } from "@social/shared/models/auth";
 
 import { api, getApiErrorMessage } from "../../shared/api/client";
 import {
@@ -9,10 +9,16 @@ import {
   getAccessToken,
   setAccessToken,
 } from "../../shared/auth/tokenStorage";
+import type { User } from "../users/types";
+
+type AuthRes = {
+  accessToken: string;
+  user: User;
+};
 
 type AuthState = {
   accessToken: string | null;
-  user: AuthRes["user"] | null;
+  user: User | null;
   status: "idle" | "loading" | "failed";
   error: string | null;
 };
@@ -59,7 +65,7 @@ const authSlice = createSlice({
       state.error = null;
       clearAccessToken();
     },
-    setUser(state, action: PayloadAction<AuthRes["user"]>) {
+    setUser(state, action: PayloadAction<User>) {
       state.user = action.payload;
     },
   },

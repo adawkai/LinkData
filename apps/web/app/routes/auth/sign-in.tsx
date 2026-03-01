@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { Button } from "../../components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
@@ -15,16 +21,18 @@ export default function SignInRoute() {
   const status = useAppSelector((s) => s.auth.status);
   const error = useAppSelector((s) => s.auth.error);
   const token = useAppSelector((s) => s.auth.accessToken);
+  const me = useAppSelector((s) => s.me.me);
 
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Redirect once we have both a token and user data (set by meSlice on login.fulfilled)
   useEffect(() => {
-    if (token) {
+    if (token && me) {
       const next = search.get("next");
       navigate(next ? decodeURIComponent(next) : "/", { replace: true });
     }
-  }, [token, navigate, search]);
+  }, [token, me, navigate, search]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,17 +70,22 @@ export default function SignInRoute() {
               />
             </div>
 
-            {error ? (
-              <p className="text-sm text-destructive">{error}</p>
-            ) : null}
+            {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
-            <Button type="submit" className="w-full" disabled={status === "loading"}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={status === "loading"}
+            >
               {status === "loading" ? "Signing in..." : "Sign in"}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
               Don’t have an account?{" "}
-              <Link to="/sign-up" className="text-primary underline-offset-4 hover:underline">
+              <Link
+                to="/sign-up"
+                className="text-primary underline-offset-4 hover:underline"
+              >
                 Sign up
               </Link>
             </p>
@@ -82,4 +95,3 @@ export default function SignInRoute() {
     </div>
   );
 }
-
