@@ -1,15 +1,17 @@
-import { UserEntity } from '../../domain/entity/user.entity';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { UserEntity } from '@/user/domain/entity/user.entity';
+import { Email } from '@/user/domain/value-object/email.vo';
+import { Username } from '@/user/domain/value-object/username.vo';
 
 export interface UserRepo {
-  save(user: UserEntity): Promise<void>;
-  findById(id: string): Promise<UserEntity | null>;
-  findByEmail(email: string): Promise<UserEntity | null>;
-  findByUsername(username: string): Promise<UserEntity | null>;
+  upsert(user: UserEntity): Promise<void>;
+  findById(id: UserId): Promise<UserEntity | null>;
+  findByEmail(email: Email): Promise<UserEntity | null>;
+  findByUsername(username: Username): Promise<UserEntity | null>;
   list(params: {
     query?: string;
-    cursor?: string;
-    take?: number;
+    pagination?: { cursor?: string; take?: number };
   }): Promise<{ items: UserEntity[]; nextCursor: string | null }>;
-  delete(id: string): Promise<void>;
-  existsById(id: string): Promise<boolean>;
+  delete(id: UserId): Promise<void>;
+  existsById(id: UserId): Promise<boolean>;
 }

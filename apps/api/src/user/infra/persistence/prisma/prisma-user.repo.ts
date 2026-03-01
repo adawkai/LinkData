@@ -3,12 +3,15 @@ import { UserEntity } from '../../../domain/entity/user.entity';
 import { UserRepo } from '../../../application/port/user.repo';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
 import { UserPrismaMapper, PrismaUser } from './mappers/user.prisma-mapper';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { Email } from '@/user/domain/value-object/email.vo';
+import { Username } from '@/user/domain/value-object/username.vo';
 
 @Injectable()
 export class PrismaUserRepo implements UserRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(user: UserEntity): Promise<void> {
+  async upsert(user: UserEntity): Promise<void> {
     const existingUser = await this.prisma.user.findUnique({
       where: { id: user.id.toString() },
     });
@@ -66,9 +69,9 @@ export class PrismaUserRepo implements UserRepo {
       });
     }
   }
-  async findById(id: string): Promise<UserEntity | null> {
+  async findById(id: UserId): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id: id.toString() },
       select: {
         id: true,
         createdAt: true,
@@ -105,9 +108,9 @@ export class PrismaUserRepo implements UserRepo {
     if (!user) return null;
     return UserPrismaMapper.toDomain(user as unknown as PrismaUser);
   }
-  async findByEmail(email: string): Promise<UserEntity | null> {
+  async findByEmail(email: Email): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toString() },
       select: {
         id: true,
         createdAt: true,
@@ -143,9 +146,9 @@ export class PrismaUserRepo implements UserRepo {
     if (!user) return null;
     return UserPrismaMapper.toDomain(user as unknown as PrismaUser);
   }
-  async findByUsername(username: string): Promise<UserEntity | null> {
+  async findByUsername(username: Username): Promise<UserEntity | null> {
     const user = await this.prisma.user.findUnique({
-      where: { username },
+      where: { username: username.toString() },
       select: {
         id: true,
         createdAt: true,
@@ -243,20 +246,20 @@ export class PrismaUserRepo implements UserRepo {
       nextCursor,
     };
   }
-  async delete(id: string): Promise<void> {
+  async delete(id: UserId): Promise<void> {
     await this.prisma.user.delete({
-      where: { id },
+      where: { id: id.toString() },
     });
   }
-  async existsById(id: string): Promise<boolean> {
+  async existsById(id: UserId): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
-      where: { id },
+      where: { id: id.toString() },
     });
     return !!user;
   }
 
   // UserRelationsPort methods
-  async exists(userId: string): Promise<boolean> {
+  async exists(userId: UserId): Promise<boolean> {
     return this.existsById(userId);
   }
 

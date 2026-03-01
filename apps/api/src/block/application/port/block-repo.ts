@@ -1,5 +1,11 @@
+import { BlockEntity } from '@/block/domain/block.entity';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+
 export interface BlockRepo {
-  exists(params: { blockerId: string; blockedId: string }): Promise<boolean>;
-  blockTx(params: { blockerId: string; blockedId: string }): Promise<void>;
-  unblock(params: { blockerId: string; blockedId: string }): Promise<void>;
+  create(block: BlockEntity): Promise<void>;
+  delete(block: BlockEntity): Promise<void>;
+  findBlockByBlockerIdAndBlockedId(
+    blockerId: UserId,
+    blockedId: UserId,
+  ): Promise<BlockEntity | null>;
 }

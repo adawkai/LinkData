@@ -1,6 +1,9 @@
 import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
-import { BlockTargetBodyDTO } from './dto/block-target.body.dto';
+import type {
+  BlockTargetBodyDTO,
+  UnBlockTargetBodyDTO,
+} from './dto/block-target.body.dto';
 import { BlockUserUseCase } from '../application/usecase/block-user.usecase';
 import { UnblockUserUseCase } from '../application/usecase/unblock-user.usecase';
 
@@ -18,7 +21,7 @@ export class BlockController {
   }
 
   @Delete()
-  unblock(@Req() req: any, @Body() dto: BlockTargetBodyDTO) {
+  unblock(@Req() req: any, @Body() dto: UnBlockTargetBodyDTO) {
     return this.unBlockUser.execute(req.user.userId, dto);
   }
 }

@@ -9,9 +9,9 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
 
-import { CreatePostDtoClass } from '../application/dto/create-post.dto';
 import { CreatePostUseCase } from '../application/use-cases/create-post.usecase';
 import { GetFeedUseCase } from '../application/use-cases/get-feed.usecase';
+import type { CreatePostBodyDTO } from './dto/create-post.body.dto';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard)
@@ -22,9 +22,8 @@ export class PostController {
   ) {}
 
   @HttpPost()
-  create(@Req() req: any, @Body() dto: CreatePostDtoClass) {
-    const input = { content: dto.content };
-    return this.createPost.execute(req.user.userId, input);
+  create(@Req() req: any, @Body() dto: CreatePostBodyDTO) {
+    return this.createPost.execute(req.user.userId, dto);
   }
 
   @Get('feed')
@@ -33,10 +32,9 @@ export class PostController {
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
   ) {
-    return this.getFeed.execute(
-      req.user.userId,
+    return this.getFeed.execute(req.user.userId, {
       cursor,
-      take ? parseInt(take, 10) : undefined,
-    );
+      take: take ? parseInt(take, 10) : 10,
+    });
   }
 }

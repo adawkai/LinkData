@@ -1,5 +1,11 @@
+import { FollowRequestEntity } from '@/follow/domain/follow-request.entity';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+
 export interface FollowRequestRepo {
-  exists(requesterId: string, requestedId: string): Promise<boolean>;
-  create(requesterId: string, requestedId: string): Promise<void>;
-  delete(requesterId: string, requestedId: string): Promise<void>;
+  create(followRequest: FollowRequestEntity): Promise<void>;
+  delete(followRequest: FollowRequestEntity): Promise<void>;
+  findFollowRequestByRequesterIdAndRequestedId(
+    requesterId: UserId,
+    requestedId: UserId,
+  ): Promise<FollowRequestEntity | null>;
 }

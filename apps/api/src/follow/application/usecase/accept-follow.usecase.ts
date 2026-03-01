@@ -1,15 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import { NotFoundError } from '@/_shared/domain/errors';
 import type { FollowRepo } from '../ports/follow-repo.port';
 import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
 import type { UserRepo } from '@/user/application/port/user.repo';
 import { AcceptFollowBodyDTO } from '@/follow/interface/dto/accept-follow.body.dto';
+import { AcceptFollowResponseDTO } from '@/follow/interface/dto/accept-follow.response';
+import { UserNotFoundError } from '@/user/domain/errors';
 import {
-  AcceptFollowErrorResponseDTO,
-  AcceptFollowResponseDTO,
-} from '@/follow/interface/dto/accept-follow.response';
-import { UserNotFoundError } from '@/user/domain/error/user-error-code';
+  AlreadyFollowedError,
+  FollowRequestNotFoundError,
+} from '@/follow/domain/errors';
+import { FollowEntity } from '../../domain/follow.entity';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
 export class AcceptFollowUseCase {
@@ -23,35 +25,38 @@ export class AcceptFollowUseCase {
   ) {}
 
   async execute(
-    userId: string,
+    accepterId: UserId,
     input: AcceptFollowBodyDTO,
-  ): Promise<AcceptFollowResponseDTO | AcceptFollowErrorResponseDTO> {
-    try {
-      const { requesterId } = input;
+  ): Promise<AcceptFollowResponseDTO> {
+    const requesterId = UserId.from(input.requesterId);
 
-      // Validate users
-      const requesterExists = await this.userRepo.existsById(requesterId);
+    const requester = await this.userRepo.findById(requesterId);
+    if (!requester) throw new UserNotFoundError();
 
-      if (!requesterExists) {
-        throw new UserNotFoundError();
-      }
+    const accepter = await this.userRepo.findById(accepterId);
+    if (!accepter) throw new UserNotFoundError();
 
-      const has = await this.followRequestRepo.exists(requesterId, userId);
-      if (!has) throw new NotFoundError('Request not found');
+    const followRequest =
+      await this.followRequestRepo.findFollowRequestByRequesterIdAndRequestedId(
+        requesterId,
+        accepterId,
+      );
+    if (!followRequest) throw new FollowRequestNotFoundError();
 
-      await this.followRepo.create({
-        followerId: requesterId,
-        followingId: userId,
-      });
-      await this.followRequestRepo.delete(requesterId, userId);
-      return { ok: true };
-    } catch (error) {
-      return {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      };
-    }
+    let follow = await this.followRepo.findFollowByFollowerIdAndFollowingId(
+      requesterId,
+      accepterId,
+    );
+
+    if (follow) throw new AlreadyFollowedError();
+
+    follow = FollowEntity.create({
+      followerId: requesterId,
+      followingId: accepterId,
+    });
+
+    await this.followRepo.create(follow);
+    await this.followRequestRepo.delete(followRequest);
+    return { ok: true };
   }
 }

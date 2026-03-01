@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { assertUserIsActive } from '../../domain/policy/user-active.policy';
-import { USER_REPO, type UserRepo } from '../port/user.repo';
+import { type UserRepo } from '../port/user.repo';
 import { UserLoginBodyDTO } from '../../interface/dto/user-login.body.dto';
 import {
   UserLoginErrorResponseDTO,
@@ -11,7 +11,7 @@ import { Email } from '../../domain/value-object/email.vo';
 import {
   InvalidCredentialsError,
   UserNotFoundError,
-} from '../../domain/error/user-error-code';
+} from '../../domain/errors';
 import {
   type TokenSigner,
   TOKEN_SIGNER,
@@ -20,11 +20,13 @@ import {
   PASSWORD_HASHER,
   type PasswordHasher,
 } from '@/_shared/application/security/password.hasher';
+import { TOKENS } from '@/_shared/application/tokens';
+import { Username } from '@/user/domain/value-object/username.vo';
 
 @Injectable()
 export class LoginUseCase {
   constructor(
-    @Inject(USER_REPO) private readonly userRepo: UserRepo,
+    @Inject(TOKENS.USER_REPO) private readonly userRepo: UserRepo,
     @Inject(TOKEN_SIGNER) private readonly signer: TokenSigner,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
   ) {}
@@ -32,39 +34,32 @@ export class LoginUseCase {
   async execute(
     input: UserLoginBodyDTO,
   ): Promise<UserLoginResponseDTO | UserLoginErrorResponseDTO> {
-    try {
-      const isEmail = Email.isValid(input.usernameOrEmail);
-      const user = isEmail
-        ? await this.userRepo.findByEmail(input.usernameOrEmail)
-        : await this.userRepo.findByUsername(input.usernameOrEmail);
+    const isEmail = Email.isValid(input.usernameOrEmail);
+    const user = isEmail
+      ? await this.userRepo.findByEmail(Email.create(input.usernameOrEmail))
+      : await this.userRepo.findByUsername(
+          Username.create(input.usernameOrEmail),
+        );
 
-      if (!user) throw new UserNotFoundError();
-      assertUserIsActive(user);
+    if (!user) throw new UserNotFoundError();
+    assertUserIsActive(user);
 
-      const ok = await this.hasher.compare(input.password, user.passwordHash);
-      if (!ok) throw new InvalidCredentialsError();
+    const ok = await this.hasher.compare(input.password, user.passwordHash);
+    if (!ok) throw new InvalidCredentialsError();
 
-      const accessToken = await this.signer.signAccessToken({
-        sub: user.id.toString(),
+    const accessToken = await this.signer.signAccessToken({
+      sub: user.id.toString(),
+      username: user.username.toString(),
+      role: user.role,
+    });
+    return {
+      accessToken,
+      user: {
+        id: user.id.toString(),
+        email: user.email.toString(),
         username: user.username.toString(),
         role: user.role,
-      });
-      return {
-        accessToken,
-        user: {
-          id: user.id.toString(),
-          email: user.email.toString(),
-          username: user.username.toString(),
-          role: user.role,
-        },
-      };
-    } catch (error) {
-      return {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      };
-    }
+      },
+    };
   }
 }

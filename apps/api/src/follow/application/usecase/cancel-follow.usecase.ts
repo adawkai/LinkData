@@ -3,11 +3,10 @@ import { TOKENS } from '@/_shared/application/tokens';
 import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
 import type { UserRepo } from '@/user/application/port/user.repo';
 import { CancelFollowBodyDTO } from '@/follow/interface/dto/follow-target.body.dto';
-import {
-  CancelFollowResponseDTO,
-  CancelFollowErrorResponseDTO,
-} from '@/follow/interface/dto/follow-target.response.dto';
-import { UserNotFoundError } from '@/user/domain/error/user-error-code';
+import { CancelFollowResponseDTO } from '@/follow/interface/dto/follow-target.response.dto';
+import { UserNotFoundError } from '@/user/domain/errors';
+import { FollowRequestNotFoundError } from '../../domain/errors';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
 export class CancelFollowUseCase {
@@ -19,30 +18,26 @@ export class CancelFollowUseCase {
   ) {}
 
   async execute(
-    userId: string,
+    requesterId: UserId,
     input: CancelFollowBodyDTO,
-  ): Promise<CancelFollowResponseDTO | CancelFollowErrorResponseDTO> {
-    try {
-      const targetId = input.targetUserId;
+  ): Promise<CancelFollowResponseDTO> {
+    const targetId = UserId.from(input.targetUserId);
 
-      // Validate users
-      const requesterExists = await this.userRepo.existsById(userId);
+    // Validate users
+    const requester = await this.userRepo.findById(requesterId);
+    if (!requester) throw new UserNotFoundError();
 
-      if (!requesterExists) {
-        throw new UserNotFoundError();
-      }
+    const target = await this.userRepo.findById(targetId);
+    if (!target) throw new UserNotFoundError();
 
-      const has = await this.followRequestRepo.exists(userId, targetId);
-      if (!has) return { ok: true };
-      await this.followRequestRepo.delete(userId, targetId);
-      return { ok: true };
-    } catch (error) {
-      return {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      };
-    }
+    const followRequest =
+      await this.followRequestRepo.findFollowRequestByRequesterIdAndRequestedId(
+        requesterId,
+        targetId,
+      );
+    if (!followRequest) throw new FollowRequestNotFoundError();
+
+    await this.followRequestRepo.delete(followRequest);
+    return { ok: true };
   }
 }

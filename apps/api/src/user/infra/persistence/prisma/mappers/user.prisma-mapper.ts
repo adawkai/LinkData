@@ -1,9 +1,6 @@
 // infra/persistence/prisma/mappers/user.prisma-mapper.ts
 import { UserEntity } from '../../../../domain/entity/user.entity';
 import { ProfileEntity } from '../../../../domain/entity/profile.entity';
-import { UserId } from '../../../../domain/value-object/user-id.vo';
-import { Email } from '../../../../domain/value-object/email.vo';
-import { Username } from '../../../../domain/value-object/username.vo';
 
 export type PrismaUser = {
   id: string;
@@ -55,12 +52,12 @@ export class UserPrismaMapper {
       : ProfileEntity.empty();
 
     return UserEntity.rehydrate({
-      id: UserId.create(raw.id),
+      id: raw.id,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
       name: raw.name,
-      email: Email.create(raw.email),
-      username: Username.create(raw.username),
+      email: raw.email,
+      username: raw.username,
       passwordHash: raw.passwordHash,
       role: raw.role,
       isPrivate: raw.isPrivate,

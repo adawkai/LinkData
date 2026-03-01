@@ -9,8 +9,8 @@ export type UserRole = 'USER' | 'ADMIN';
 
 export type CreateUserProps = {
   name: string;
-  email: string;
-  username: string;
+  email: Email;
+  username: Username;
   passwordHash: string;
   role?: UserRole;
   isPrivate?: boolean;
@@ -18,12 +18,12 @@ export type CreateUserProps = {
 };
 
 export type RehydrateUserProps = {
-  id: UserId;
+  id: string;
   createdAt: Date;
   updatedAt: Date;
   name: string;
-  email: Email;
-  username: Username;
+  email: string;
+  username: string;
   passwordHash: string;
   role: UserRole;
   isPrivate: boolean;
@@ -65,12 +65,12 @@ export class UserEntity {
 
   static rehydrate(props: RehydrateUserProps): UserEntity {
     return new UserEntity(
-      props.id,
+      UserId.from(props.id),
       props.createdAt,
       props.updatedAt,
       props.name,
-      props.email,
-      props.username,
+      Email.create(props.email),
+      Username.create(props.username),
       props.passwordHash,
       props.role,
       props.isPrivate,
@@ -89,8 +89,8 @@ export class UserEntity {
       now,
       now,
       props.name,
-      Email.create(props.email),
-      Username.create(props.username),
+      props.email,
+      props.username,
       props.passwordHash,
       props.role ?? 'USER',
       props.isPrivate ?? false,

@@ -1,5 +1,5 @@
 import { UserEntity } from '../entity/user.entity';
-import { UserPrivateAccountError } from '../error/user-error-code';
+import { UserPrivateAccountError } from '../errors';
 
 export function assertCanViewPrivateAccount(params: {
   viewer: UserEntity | null;

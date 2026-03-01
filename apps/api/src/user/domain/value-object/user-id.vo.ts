@@ -1,18 +1,26 @@
 import { randomUUID } from 'crypto';
+import { UserIdInvalidError } from '../errors';
 
 export class UserId {
-  private constructor(private readonly value: string) {}
+  private constructor(private readonly value: string) {
+    Object.freeze(this);
+  }
 
-  static create(value?: string): UserId {
-    if (value && !UserId.isValid(value)) {
-      throw new Error('Invalid UserId format');
+  static create(): UserId {
+    return new UserId(`user_${randomUUID()}`);
+  }
+
+  static from(value: string): UserId {
+    if (!this.isValid(value)) {
+      throw new UserIdInvalidError();
     }
-
-    return new UserId(value ?? randomUUID());
+    return new UserId(value);
   }
 
   static isValid(value: string): boolean {
-    return /^[0-9a-fA-F-]{36}$/.test(value);
+    return /^user_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    );
   }
 
   toString(): string {

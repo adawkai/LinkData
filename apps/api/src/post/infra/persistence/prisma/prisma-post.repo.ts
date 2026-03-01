@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
-import { PostRepoPort } from '../../application/ports/post-repo.port';
+import type { PostRepo } from '@/post/application/ports/post-repo.port';
 
 @Injectable()
-export class PrismaPostRepo implements PostRepoPort {
+export class PrismaPostRepo implements PostRepo {
   constructor(private readonly prisma: PrismaService) {}
 
   async createPostTx(authorId: string, content: string) {

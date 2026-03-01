@@ -1,30 +1,64 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
 import { FollowRequestRepo } from '@/follow/application/ports/follow-request-repo.port';
+import { FollowRequestEntity } from '@/follow/domain/follow-request.entity';
+import { FollowRequestDatabaseError } from '@/follow/domain/errors';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
 export class PrismaFollowRequestRepo implements FollowRequestRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async exists(requesterId: string, requestedId: string) {
-    const row = await this.prisma.followRequest.findUnique({
-      where: { requesterId_requestedId: { requesterId, requestedId } },
-      select: { requesterId: true },
-    });
-    return !!row;
+  async create(followRequest: FollowRequestEntity) {
+    try {
+      const { requesterId, requestedId } = followRequest;
+      await this.prisma.followRequest.create({
+        data: {
+          requesterId: requesterId.toString(),
+          requestedId: requestedId.toString(),
+        },
+      });
+    } catch (e) {
+      throw new FollowRequestDatabaseError();
+    }
   }
 
-  create(requesterId: string, requestedId: string) {
-    return this.prisma.followRequest
-      .create({ data: { requesterId, requestedId } })
-      .then(() => {});
+  async delete(followRequest: FollowRequestEntity) {
+    try {
+      const { requesterId, requestedId } = followRequest;
+      await this.prisma.followRequest.delete({
+        where: {
+          requesterId_requestedId: {
+            requesterId: requesterId.toString(),
+            requestedId: requestedId.toString(),
+          },
+        },
+      });
+    } catch (e) {
+      throw new FollowRequestDatabaseError();
+    }
   }
 
-  delete(requesterId: string, requestedId: string) {
-    return this.prisma.followRequest
-      .delete({
-        where: { requesterId_requestedId: { requesterId, requestedId } },
-      })
-      .then(() => {});
+  async findFollowRequestByRequesterIdAndRequestedId(
+    requesterId: UserId,
+    requestedId: UserId,
+  ): Promise<FollowRequestEntity | null> {
+    try {
+      const followRequest = await this.prisma.followRequest.findUnique({
+        where: {
+          requesterId_requestedId: {
+            requesterId: requesterId.toString(),
+            requestedId: requestedId.toString(),
+          },
+        },
+      });
+      if (!followRequest) return null;
+      return FollowRequestEntity.create({
+        requesterId,
+        requestedId,
+      });
+    } catch (e) {
+      throw new FollowRequestDatabaseError();
+    }
   }
 }

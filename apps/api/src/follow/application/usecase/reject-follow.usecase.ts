@@ -3,11 +3,10 @@ import { TOKENS } from '@/_shared/application/tokens';
 import type { UserRepo } from '@/user/application/port/user.repo';
 import { RejectFollowBodyDTO } from '@/follow/interface/dto/accept-follow.body.dto';
 import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
-import {
-  RejectFollowResponseDTO,
-  RejectFollowErrorResponseDTO,
-} from '@/follow/interface/dto/accept-follow.response';
-import { UserNotFoundError } from '@/user/domain/error/user-error-code';
+import { RejectFollowResponseDTO } from '@/follow/interface/dto/accept-follow.response';
+import { UserNotFoundError } from '@/user/domain/errors';
+import { FollowRequestNotFoundError } from '@/follow/domain/errors';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
 export class RejectFollowUseCase {
@@ -19,28 +18,26 @@ export class RejectFollowUseCase {
   ) {}
 
   async execute(
-    userId: string,
+    rejectorId: UserId,
     input: RejectFollowBodyDTO,
-  ): Promise<RejectFollowResponseDTO | RejectFollowErrorResponseDTO> {
-    try {
-      const { requesterId } = input;
+  ): Promise<RejectFollowResponseDTO> {
+    const requesterId = UserId.from(input.requesterId);
 
-      // Validate users
-      const requesterExists = await this.userRepo.existsById(requesterId);
+    // Validate users
+    const rejector = await this.userRepo.findById(rejectorId);
+    if (!rejector) throw new UserNotFoundError();
 
-      if (!requesterExists) {
-        throw new UserNotFoundError();
-      }
+    const requester = await this.userRepo.findById(requesterId);
+    if (!requester) throw new UserNotFoundError();
 
-      await this.followRequestRepo.delete(requesterId, userId);
-      return { ok: true };
-    } catch (error) {
-      return {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      };
-    }
+    const followRequest =
+      await this.followRequestRepo.findFollowRequestByRequesterIdAndRequestedId(
+        requesterId,
+        requesterId,
+      );
+    if (!followRequest) throw new FollowRequestNotFoundError();
+
+    await this.followRequestRepo.delete(followRequest);
+    return { ok: true };
   }
 }

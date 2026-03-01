@@ -28,31 +28,26 @@ export class FollowController {
 
   @Post()
   follow(@Req() req: any, @Body() dto: FollowTargetBodyDTO) {
-    const input = { targetUserId: dto.targetUserId };
-    return this.followUser.execute(req.user.userId, input);
+    return this.followUser.execute(req.user.userId, dto);
   }
 
   @Delete()
   unfollow(@Req() req: any, @Body() dto: UnFollowTargetBodyDTO) {
-    const input = { targetUserId: dto.targetUserId };
-    return this.unfollowUser.execute(req.user.userId, input);
+    return this.unfollowUser.execute(req.user.userId, dto);
   }
 
   @Post('requests/cancel')
   cancel(@Req() req: any, @Body() dto: CancelFollowBodyDTO) {
-    const input = { targetUserId: dto.targetUserId };
-    return this.cancelReq.execute(req.user.userId, input);
+    return this.cancelReq.execute(req.user.userId, dto);
   }
 
   @Post('requests/accept')
   accept(@Req() req: any, @Body() dto: AcceptFollowBodyDTO) {
-    const input = { requesterId: dto.requesterId };
-    return this.acceptReq.execute(req.user.userId, input);
+    return this.acceptReq.execute(req.user.userId, dto);
   }
 
   @Post('requests/reject')
   reject(@Req() req: any, @Body() dto: RejectFollowBodyDTO) {
-    const input = { requesterId: dto.requesterId };
-    return this.rejectReq.execute(req.user.userId, input);
+    return this.rejectReq.execute(req.user.userId, dto);
   }
 }

@@ -1,5 +1,5 @@
 import { UserEntity } from '../entity/user.entity';
-import { UserBlockedError, UserInactiveError } from '../error/user-error-code';
+import { UserBlockedError, UserInactiveError } from '../errors';
 
 export function assertUserIsActive(user: UserEntity) {
   if (user.isActive) {

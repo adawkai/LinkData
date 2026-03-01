@@ -1,15 +1,13 @@
-import type { UserId } from '@social/shared';
-import type { FeedItemRes } from '@social/shared';
-import type { PostRecord } from '../models/post.models';
+import type { PostEntity } from '@/post/domain/post.entity';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 
-export interface PostRepoPort {
-  createPostTx(
-    authorId: UserId,
-    content: string,
-  ): Promise<Pick<PostRecord, 'id' | 'content' | 'createdAt'>>;
+export interface PostRepo {
+  create(post: PostEntity): Promise<void>;
   feed(
     userId: UserId,
-    cursor?: string,
-    take?: number,
-  ): Promise<{ items: FeedItemRes[]; nextCursor: string | null }>;
+    pagination?: {
+      cursor?: string;
+      take?: number;
+    },
+  ): Promise<{ items: PostEntity[]; nextCursor: string | null }>;
 }

@@ -1,16 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { NotFoundError } from '@/_shared/domain/errors';
 
-import { USER_REPO, type UserRepo } from '../port/user.repo';
+import { TOKENS } from '@/_shared/application/tokens';
+import { type UserRepo } from '../port/user.repo';
 import { UserEntityMapper } from '../port/user.entity-mapper';
+import { UserNotFoundError } from '@/user/domain/errors';
+import { Username } from '@/user/domain/value-object/username.vo';
 
 @Injectable()
 export class GetByUserNameUseCase {
-  constructor(@Inject(USER_REPO) private readonly users: UserRepo) {}
+  constructor(@Inject(TOKENS.USER_REPO) private readonly users: UserRepo) {}
 
-  async execute(username: string) {
+  async execute(username: Username) {
     const me = await this.users.findByUsername(username);
-    if (!me) throw new NotFoundError('User not found');
+    if (!me) throw new UserNotFoundError();
     return UserEntityMapper.toDTO(me);
   }
 }

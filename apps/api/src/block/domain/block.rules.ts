@@ -1,7 +1,11 @@
-import { ValidationError } from '@/_shared/domain/errors';
+import { UserEntity } from '@/user/domain/entity/user.entity';
+import { CannotBlockYourselfError } from './errors';
 
-export function assertCanBlock(params: { blockerId: string; targetId: string }) {
-  if (params.blockerId === params.targetId) {
-    throw new ValidationError('You cannot block yourself');
+export function assertCanBlock(params: {
+  blocker: UserEntity;
+  targeter: UserEntity;
+}) {
+  if (params.blocker.id === params.targeter.id) {
+    throw new CannotBlockYourselfError();
   }
 }
