@@ -40,17 +40,17 @@ export const followUser = createAsyncThunk<
   }
 });
 
-export const unfollowUser = createAsyncThunk<{ targetUserId: string }, FollowTargetDto>(
-  "relations/unfollow",
-  async (dto, { rejectWithValue }) => {
-    try {
-      await api.delete("/follow", { data: dto });
-      return { targetUserId: dto.targetUserId };
-    } catch (e) {
-      return rejectWithValue(getApiErrorMessage(e));
-    }
-  },
-);
+export const unfollowUser = createAsyncThunk<
+  { targetUserId: string },
+  FollowTargetDto
+>("relations/unfollow", async (dto, { rejectWithValue }) => {
+  try {
+    await api.delete("/follow", { data: dto });
+    return { targetUserId: dto.targetUserId };
+  } catch (e) {
+    return rejectWithValue(getApiErrorMessage(e));
+  }
+});
 
 export const cancelFollowRequest = createAsyncThunk<
   { targetUserId: string },
@@ -76,6 +76,18 @@ export const acceptFollowRequest = createAsyncThunk<
   }
 });
 
+export const fetchRelation = createAsyncThunk<
+  { targetUserId: string; rel: RelationState },
+  { targetUserId: string }
+>("relations/fetch", async ({ targetUserId }, { rejectWithValue }) => {
+  try {
+    const res = await api.get<RelationState>(`/follow/${targetUserId}/status`);
+    return { targetUserId, rel: res.data };
+  } catch (e) {
+    return rejectWithValue(getApiErrorMessage(e));
+  }
+});
+
 export const rejectFollowRequest = createAsyncThunk<
   { requesterId: string },
   FollowRequestDecisionDto
@@ -88,29 +100,29 @@ export const rejectFollowRequest = createAsyncThunk<
   }
 });
 
-export const blockUser = createAsyncThunk<{ targetUserId: string }, BlockTargetDto>(
-  "relations/block",
-  async (dto, { rejectWithValue }) => {
-    try {
-      await api.post("/blocks", dto);
-      return { targetUserId: dto.targetUserId };
-    } catch (e) {
-      return rejectWithValue(getApiErrorMessage(e));
-    }
-  },
-);
+export const blockUser = createAsyncThunk<
+  { targetUserId: string },
+  BlockTargetDto
+>("relations/block", async (dto, { rejectWithValue }) => {
+  try {
+    await api.post("/blocks", dto);
+    return { targetUserId: dto.targetUserId };
+  } catch (e) {
+    return rejectWithValue(getApiErrorMessage(e));
+  }
+});
 
-export const unblockUser = createAsyncThunk<{ targetUserId: string }, BlockTargetDto>(
-  "relations/unblock",
-  async (dto, { rejectWithValue }) => {
-    try {
-      await api.delete("/blocks", { data: dto });
-      return { targetUserId: dto.targetUserId };
-    } catch (e) {
-      return rejectWithValue(getApiErrorMessage(e));
-    }
-  },
-);
+export const unblockUser = createAsyncThunk<
+  { targetUserId: string },
+  BlockTargetDto
+>("relations/unblock", async (dto, { rejectWithValue }) => {
+  try {
+    await api.delete("/blocks", { data: dto });
+    return { targetUserId: dto.targetUserId };
+  } catch (e) {
+    return rejectWithValue(getApiErrorMessage(e));
+  }
+});
 
 const relationsSlice = createSlice({
   name: "relations",
@@ -123,7 +135,9 @@ const relationsSlice = createSlice({
     },
     setRelationState(
       state,
-      action: { payload: { targetUserId: string; rel: Partial<RelationState> } },
+      action: {
+        payload: { targetUserId: string; rel: Partial<RelationState> };
+      },
     ) {
       const current = state.byUserId[action.payload.targetUserId] ?? {
         followStatus: "NONE" as const,
@@ -140,7 +154,7 @@ const relationsSlice = createSlice({
       state.status = "loading";
       state.error = null;
     };
-    const fail = (state: RelationsSliceState, action: any) => {
+    const fail = (state: RelationsSliceState, action: { payload: unknown }) => {
       state.status = "failed";
       state.error = (action.payload as string) ?? "Action failed";
     };
@@ -156,6 +170,7 @@ const relationsSlice = createSlice({
       .addCase(rejectFollowRequest.pending, start)
       .addCase(blockUser.pending, start)
       .addCase(unblockUser.pending, start)
+      .addCase(fetchRelation.pending, start)
       .addCase(followUser.rejected, fail)
       .addCase(unfollowUser.rejected, fail)
       .addCase(cancelFollowRequest.rejected, fail)
@@ -163,6 +178,11 @@ const relationsSlice = createSlice({
       .addCase(rejectFollowRequest.rejected, fail)
       .addCase(blockUser.rejected, fail)
       .addCase(unblockUser.rejected, fail)
+      .addCase(fetchRelation.rejected, fail)
+      .addCase(fetchRelation.fulfilled, (state, action) => {
+        done(state);
+        state.byUserId[action.payload.targetUserId] = action.payload.rel;
+      })
       .addCase(followUser.fulfilled, (state, action) => {
         done(state);
         const prev = state.byUserId[action.payload.targetUserId] ?? {
@@ -226,4 +246,3 @@ const relationsSlice = createSlice({
 
 export const { clearRelations, setRelationState } = relationsSlice.actions;
 export default relationsSlice.reducer;
-

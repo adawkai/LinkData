@@ -1,5 +1,6 @@
 export type FollowTargetResponseDTO = {
   ok: true;
+  status: 'FOLLOWING' | 'REQUESTED';
 };
 
 export type UnFollowTargetResponseDTO = {

@@ -2,7 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
 import type { PostRepo } from '../ports/post-repo.port';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
-import { PostEntity } from '@/post/domain/post.entity';
+import { PostEntityMapper } from '../ports/post.entity-mapper';
+import { FeedResponseDTO } from '../../interface/dto/post.response.dto';
 
 @Injectable()
 export class GetFeedUseCase {
@@ -17,7 +18,8 @@ export class GetFeedUseCase {
       cursor?: string;
       take?: number;
     },
-  ): Promise<{ items: PostEntity[]; nextCursor: string | null }> {
-    return await this.postRepo.feed(userId, pagination);
+  ): Promise<FeedResponseDTO> {
+    const { items, nextCursor } = await this.postRepo.feed(userId, pagination);
+    return PostEntityMapper.toFeedDTO(items, nextCursor);
   }
 }

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Param,
   Patch,
   Query,
@@ -12,16 +13,27 @@ import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
 
 import { GetByUserNameUseCase } from '../application/usecase/get-by-username.usecase';
 import { GetMeUseCase } from '../application/usecase/get-me.usecase';
+import { GetByIdUseCase } from '../application/usecase/get-by-id.usecase';
 import { ListUserUseCase } from '../application/usecase/list-user.usecase';
+import { UpdateMyProfileUseCase } from '../application/usecase/update-my-profile.usecase';
 import { Username } from '@/user/domain/value-object/username.vo';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { GetUserPostsUseCase } from '@/post/application/use-cases/get-user-posts.usecase';
+import { ListFollowersUseCase } from '@/follow/application/usecase/list-followers.usecase';
+import { ListFollowingUseCase } from '@/follow/application/usecase/list-following.usecase';
+import type { UpdateProfileBodyDTO } from './dto/update-profile.body.dto';
 
 @Controller('users')
 export class UserController {
   constructor(
     private readonly getMe: GetMeUseCase,
     private readonly getUserByUsername: GetByUserNameUseCase,
+    private readonly getUserById: GetByIdUseCase,
     private readonly listUsers: ListUserUseCase,
+    private readonly updateMyProfile: UpdateMyProfileUseCase,
+    private readonly getUserPosts: GetUserPostsUseCase,
+    private readonly listFollowers: ListFollowersUseCase,
+    private readonly listFollowing: ListFollowingUseCase,
   ) {}
 
   @Get('search')
@@ -30,10 +42,13 @@ export class UserController {
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
   ) {
-    return this.listUsers.execute(query || '', {
-      cursor,
-      take: take ? parseInt(take, 10) : undefined,
-    });
+    return this.listUsers.execute(
+      {
+        cursor,
+        take: take ? parseInt(take, 10) : 10,
+      },
+      query,
+    );
   }
 
   @Get('by-username/:username')
@@ -45,6 +60,54 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   me(@Req() req: any) {
+    Logger.log('me', req.user.userId);
     return this.getMe.execute(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('me/profile')
+  updateMe(@Req() req: any, @Body() dto: UpdateProfileBodyDTO) {
+    return this.updateMyProfile.execute(req.user.userId, dto);
+  }
+
+  @Get(':userId/posts')
+  posts(
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.getUserPosts.execute(UserId.from(userId), {
+      cursor,
+      take: take ? parseInt(take, 10) : 10,
+    });
+  }
+
+  @Get(':userId/followers')
+  followers(
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.listFollowers.execute(UserId.from(userId), {
+      cursor,
+      take: take ? parseInt(take, 10) : 10,
+    });
+  }
+
+  @Get(':userId/following')
+  following(
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+    @Query('take') take?: string,
+  ) {
+    return this.listFollowing.execute(UserId.from(userId), {
+      cursor,
+      take: take ? parseInt(take, 10) : 10,
+    });
+  }
+
+  @Get(':userId')
+  byId(@Param('userId') userId: string) {
+    return this.getUserById.execute(UserId.from(userId));
   }
 }

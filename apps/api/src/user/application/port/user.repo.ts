@@ -3,8 +3,14 @@ import { UserEntity } from '@/user/domain/entity/user.entity';
 import { Email } from '@/user/domain/value-object/email.vo';
 import { Username } from '@/user/domain/value-object/username.vo';
 
+export type UpsertUserType =
+  | 'USER_AND_PROFILE'
+  | 'USER_ONLY'
+  | 'PROFILE_ONLY'
+  | 'NONE';
+
 export interface UserRepo {
-  upsert(user: UserEntity): Promise<void>;
+  upsert(user: UserEntity, type?: UpsertUserType): Promise<void>;
   findById(id: UserId): Promise<UserEntity | null>;
   findByEmail(email: Email): Promise<UserEntity | null>;
   findByUsername(username: Username): Promise<UserEntity | null>;

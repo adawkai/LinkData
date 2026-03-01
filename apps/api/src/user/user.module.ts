@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 
 import { PrismaModule } from '@/_shared/infra/prisma/prisma.module';
 import { TOKENS } from '@/_shared/application/tokens';
@@ -14,6 +14,8 @@ import { AuthController } from './interface/auth.controller';
 // Use cases
 import { GetByUserNameUseCase } from './application/usecase/get-by-username.usecase';
 import { GetMeUseCase } from './application/usecase/get-me.usecase';
+import { GetByIdUseCase } from './application/usecase/get-by-id.usecase';
+import { UpdateMyProfileUseCase } from './application/usecase/update-my-profile.usecase';
 import { ListUserUseCase } from './application/usecase/list-user.usecase';
 import { LoginUseCase } from './application/usecase/login.usecase';
 import { RegisterUseCase } from './application/usecase/register.usecase';
@@ -21,8 +23,15 @@ import { RegisterUseCase } from './application/usecase/register.usecase';
 // Repositories
 import { PrismaUserRepo } from './infra/persistence/prisma/prisma-user.repo';
 
+import { PostModule } from '../post/post.module';
+import { FollowModule } from '../follow/follow.module';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [
+    PrismaModule,
+    forwardRef(() => PostModule),
+    forwardRef(() => FollowModule),
+  ],
 
   controllers: [UserController, AuthController],
 
@@ -30,6 +39,8 @@ import { PrismaUserRepo } from './infra/persistence/prisma/prisma-user.repo';
     // Use cases - user
     GetMeUseCase,
     GetByUserNameUseCase,
+    GetByIdUseCase,
+    UpdateMyProfileUseCase,
     ListUserUseCase,
     LoginUseCase,
     RegisterUseCase,

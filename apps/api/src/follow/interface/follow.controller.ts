@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
 import type {
   CancelFollowBodyDTO,
   FollowTargetBodyDTO,
@@ -14,6 +15,7 @@ import { UnfollowUserUseCase } from '../application/usecase/unfollow-user.usecas
 import { CancelFollowUseCase } from '../application/usecase/cancel-follow.usecase';
 import { AcceptFollowUseCase } from '../application/usecase/accept-follow.usecase';
 import { RejectFollowUseCase } from '../application/usecase/reject-follow.usecase';
+import { GetRelationUseCase } from '../application/usecase/get-relation.usecase';
 
 @Controller('follow')
 @UseGuards(JwtAuthGuard)
@@ -24,7 +26,16 @@ export class FollowController {
     private readonly cancelReq: CancelFollowUseCase,
     private readonly acceptReq: AcceptFollowUseCase,
     private readonly rejectReq: RejectFollowUseCase,
+    private readonly getRelation: GetRelationUseCase,
   ) {}
+
+  @Get(':targetUserId/status')
+  status(@Req() req: any, @Param('targetUserId') targetUserId: string) {
+    return this.getRelation.execute(
+      req.user.userId,
+      UserId.from(targetUserId),
+    );
+  }
 
   @Post()
   follow(@Req() req: any, @Body() dto: FollowTargetBodyDTO) {

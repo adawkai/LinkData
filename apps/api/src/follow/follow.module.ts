@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '@/_shared/infra/prisma/prisma.module';
 import { UserModule } from '../user/user.module';
+import { BlockModule } from '../block/block.module';
 import { TOKENS } from '@/_shared/application/tokens';
 
 // Controllers
@@ -12,13 +13,16 @@ import { UnfollowUserUseCase } from './application/usecase/unfollow-user.usecase
 import { CancelFollowUseCase } from './application/usecase/cancel-follow.usecase';
 import { AcceptFollowUseCase } from './application/usecase/accept-follow.usecase';
 import { RejectFollowUseCase } from './application/usecase/reject-follow.usecase';
+import { ListFollowersUseCase } from './application/usecase/list-followers.usecase';
+import { ListFollowingUseCase } from './application/usecase/list-following.usecase';
+import { GetRelationUseCase } from './application/usecase/get-relation.usecase';
 
 // Repositories
 import { PrismaFollowRepo } from './infra/persistence/prisma/prisma-follow.repo';
 import { PrismaFollowRequestRepo } from './infra/persistence/prisma/prisma-follow-request.repo';
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, forwardRef(() => UserModule), BlockModule],
   controllers: [FollowController],
   providers: [
     // Use cases
@@ -27,6 +31,9 @@ import { PrismaFollowRequestRepo } from './infra/persistence/prisma/prisma-follo
     CancelFollowUseCase,
     AcceptFollowUseCase,
     RejectFollowUseCase,
+    ListFollowersUseCase,
+    ListFollowingUseCase,
+    GetRelationUseCase,
 
     // Repositories
     { provide: TOKENS.FOLLOW_REPO, useClass: PrismaFollowRepo },
@@ -38,6 +45,9 @@ import { PrismaFollowRequestRepo } from './infra/persistence/prisma/prisma-follo
     CancelFollowUseCase,
     AcceptFollowUseCase,
     RejectFollowUseCase,
+    ListFollowersUseCase,
+    ListFollowingUseCase,
+    GetRelationUseCase,
   ],
 })
 export class FollowModule {}

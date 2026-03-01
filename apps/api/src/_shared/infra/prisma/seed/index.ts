@@ -1,21 +1,16 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import { seedUser } from './user';
-import { seedProfile } from './profile';
 import { seedPost } from './post';
 
-const databaseURL = 'postgresql://admin:admin123@localhost:5432/linktree';
-
 const adapter = new PrismaPg({
-  connectionString: databaseURL,
+  connectionString: process.env['DATABASE_URL']!,
 });
 
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const users = await seedUser(prisma, 200);
-
-  await seedProfile(prisma, users);
 
   await seedPost(prisma, users);
 

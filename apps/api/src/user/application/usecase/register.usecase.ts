@@ -25,6 +25,8 @@ import {
 import { UserEntity } from '../../domain/entity/user.entity';
 import { TOKENS } from '@/_shared/application/tokens';
 
+import { UserEntityMapper } from '../port/user.entity-mapper';
+
 @Injectable()
 export class RegisterUseCase {
   constructor(
@@ -62,12 +64,7 @@ export class RegisterUseCase {
       role: user.role,
     });
     return {
-      user: {
-        id: user.id.toString(),
-        email: user.email.toString(),
-        username: user.username.toString(),
-        role: user.role,
-      },
+      user: UserEntityMapper.toDTO(user),
       accessToken,
     };
   }

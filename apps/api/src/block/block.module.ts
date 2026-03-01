@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PrismaModule } from '@/_shared/infra/prisma/prisma.module';
 import { UserModule } from '../user/user.module';
 import { TOKENS } from '@/_shared/application/tokens';
@@ -14,7 +14,7 @@ import { UnblockUserUseCase } from './application/usecase/unblock-user.usecase';
 import { PrismaBlockRepo } from './infra/persistence/prisma/prisma-block.repo';
 
 @Module({
-  imports: [PrismaModule, UserModule],
+  imports: [PrismaModule, forwardRef(() => UserModule)],
   controllers: [BlockController],
   providers: [
     // Use cases
@@ -24,6 +24,6 @@ import { PrismaBlockRepo } from './infra/persistence/prisma/prisma-block.repo';
     // Repositories
     { provide: TOKENS.BLOCK_REPO, useClass: PrismaBlockRepo },
   ],
-  exports: [BlockUserUseCase, UnblockUserUseCase],
+  exports: [BlockUserUseCase, UnblockUserUseCase, TOKENS.BLOCK_REPO],
 })
 export class BlockModule {}

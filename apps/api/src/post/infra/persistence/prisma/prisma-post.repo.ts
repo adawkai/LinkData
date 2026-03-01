@@ -1,46 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
 import type { PostRepo } from '@/post/application/ports/post-repo.port';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { PostEntity } from '@/post/domain/post.entity';
+import {
+  PrismaUser,
+  UserPrismaMapper,
+} from '@/user/infra/persistence/prisma/mappers/user.prisma-mapper';
 
 @Injectable()
 export class PrismaPostRepo implements PostRepo {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createPostTx(authorId: string, content: string) {
-    return this.prisma.$transaction(async (tx) => {
-      const post = await tx.post.create({
-        data: { authorId, content },
-        select: { id: true, content: true, createdAt: true },
+  async create(post: PostEntity): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.post.create({
+        data: {
+          id: post.id.toString(),
+          authorId: post.authorId.toString(),
+          content: post.content,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+        },
       });
       await tx.user.update({
-        where: { id: authorId },
+        where: { id: post.authorId.toString() },
         data: { postCount: { increment: 1 } },
       });
-      return post;
     });
   }
 
-  async feed(userId: string, cursor?: string, take?: number) {
+  async feed(userId: UserId, pagination?: { cursor?: string; take?: number }) {
+    const { cursor, take } = pagination ?? {};
     const takeWithExtra = take ? take + 1 : 21;
     // posts by following + self
     const following = await this.prisma.follow.findMany({
-      where: { followerId: userId },
+      where: { followerId: userId.toString() },
       select: { followingId: true },
     });
 
-    const ids = [userId, ...following.map((f) => f.followingId)];
+    const ids = [userId.toString(), ...following.map((f) => f.followingId)];
 
     const posts = await this.prisma.post.findMany({
       where: { authorId: { in: ids } },
       take: takeWithExtra,
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : 0,
-      select: {
-        id: true,
-        authorId: true,
-        content: true,
-        createdAt: true,
-        author: { select: { username: true } },
+      include: {
+        author: {
+          include: {
+            profile: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -56,13 +67,60 @@ export class PrismaPostRepo implements PostRepo {
     }
 
     return {
-      items: items.map((p) => ({
-        id: p.id,
-        authorId: p.authorId,
-        username: p.author.username,
-        content: p.content,
-        createdAt: p.createdAt.toISOString(),
-      })),
+      items: items.map((p) =>
+        PostEntity.rehydrate({
+          id: p.id,
+          authorId: p.authorId,
+          content: p.content,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          author: UserPrismaMapper.toDomain(p.author as unknown as PrismaUser),
+        }),
+      ),
+      nextCursor,
+    };
+  }
+
+  async findByAuthorId(
+    authorId: UserId,
+    pagination?: { cursor?: string; take?: number },
+  ) {
+    const { cursor, take } = pagination ?? {};
+    const takeWithExtra = (take ?? 20) + 1;
+
+    const posts = await this.prisma.post.findMany({
+      where: { authorId: authorId.toString() },
+      take: takeWithExtra,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+      include: {
+        author: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let nextCursor: string | null = null;
+    const items = [...posts];
+    if (items.length > (take ?? 20)) {
+      const lastItem = items.pop();
+      nextCursor = lastItem?.id ?? null;
+    }
+
+    return {
+      items: items.map((p) =>
+        PostEntity.rehydrate({
+          id: p.id,
+          authorId: p.authorId,
+          content: p.content,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          author: UserPrismaMapper.toDomain(p.author as unknown as PrismaUser),
+        }),
+      ),
       nextCursor,
     };
   }

@@ -1,5 +1,4 @@
 import { ProfileEntity, UpdateProfileProps } from './profile.entity';
-import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UserId } from '../value-object/user-id.vo';
 import { Email } from '../value-object/email.vo';
@@ -113,6 +112,11 @@ export class UserEntity {
     this.postCount = props.postCount ?? this.postCount;
     this.followersCount = props.followersCount ?? this.followersCount;
     this.followingCount = props.followingCount ?? this.followingCount;
+    this.updatedAt = new Date();
+  }
+
+  async updateProfile(profile: UpdateProfileProps) {
+    this.profile.update(profile);
     this.updatedAt = new Date();
   }
 

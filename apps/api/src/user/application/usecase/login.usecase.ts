@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import { assertUserIsActive } from '../../domain/policy/user-active.policy';
 import { type UserRepo } from '../port/user.repo';
 import { UserLoginBodyDTO } from '../../interface/dto/user-login.body.dto';
 import {
@@ -10,6 +9,7 @@ import {
 import { Email } from '../../domain/value-object/email.vo';
 import {
   InvalidCredentialsError,
+  UserInactiveError,
   UserNotFoundError,
 } from '../../domain/errors';
 import {
@@ -22,6 +22,8 @@ import {
 } from '@/_shared/application/security/password.hasher';
 import { TOKENS } from '@/_shared/application/tokens';
 import { Username } from '@/user/domain/value-object/username.vo';
+
+import { UserEntityMapper } from '../port/user.entity-mapper';
 
 @Injectable()
 export class LoginUseCase {
@@ -42,7 +44,7 @@ export class LoginUseCase {
         );
 
     if (!user) throw new UserNotFoundError();
-    assertUserIsActive(user);
+    if (!user.isActive) throw new UserInactiveError();
 
     const ok = await this.hasher.compare(input.password, user.passwordHash);
     if (!ok) throw new InvalidCredentialsError();
@@ -54,12 +56,7 @@ export class LoginUseCase {
     });
     return {
       accessToken,
-      user: {
-        id: user.id.toString(),
-        email: user.email.toString(),
-        username: user.username.toString(),
-        role: user.role,
-      },
+      user: UserEntityMapper.toDTO(user),
     };
   }
 }

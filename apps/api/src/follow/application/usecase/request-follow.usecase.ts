@@ -49,6 +49,6 @@ export class RequestFollowUseCase {
 
     await this.followRequestRepo.create(followRequest);
 
-    return { ok: true };
+    return { ok: true, status: 'REQUESTED' };
   }
 }
