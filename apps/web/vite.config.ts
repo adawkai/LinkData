@@ -5,4 +5,12 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  ssr: {
+    noExternal: [
+      "@social/shared",
+      "reflect-metadata",
+      "class-transformer",
+      "class-validator",
+    ],
+  },
 });

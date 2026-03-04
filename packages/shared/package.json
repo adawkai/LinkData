@@ -1,29 +1,27 @@
 {
   "name": "@social/shared",
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.build.json -w"
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./models/*": {
-      "types": "./dist/models/*.d.ts",
-      "default": "./dist/models/*.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "default": "./dist/types.js"
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
     }
   },
   "dependencies": {
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
+    "reflect-metadata": "^0.2.2",
     "typescript": "^5.7.3",
     "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1"
   }
 }

@@ -8,8 +8,8 @@ export class PostMapper {
       id: post.id,
       authorId: post.authorId,
       content: post.content,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
+      createdAt: new Date(post.createdAt),
+      updatedAt: new Date(post.updatedAt),
       author: UserMapper.toUser(post.author),
     };
   }
