@@ -3,7 +3,7 @@ import { TOKENS } from '@/_shared/application/tokens';
 
 // Ports
 import type { FollowRepoPort } from '../ports/follow.repo.port';
-import { UserEntityDTOMapperPort } from '@/user/application/port/user.entity-mapper.port';
+import { UserEntityDTOMapperPort } from '@/user/application/port/user.mapper.port';
 
 // Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';

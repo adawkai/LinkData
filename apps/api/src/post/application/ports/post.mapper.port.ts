@@ -1,5 +1,5 @@
 import { PostEntity } from '../../domain/post.entity';
-import { UserEntityDTOMapperPort } from '@/user/application/port/user.entity-mapper.port';
+import { UserEntityDTOMapperPort } from '@/user/application/port/user.mapper.port';
 
 import { PostResponseDTO } from '@social/shared';
 

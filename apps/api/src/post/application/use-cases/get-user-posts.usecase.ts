@@ -3,7 +3,7 @@ import { TOKENS } from '@/_shared/application/tokens';
 
 // Ports
 import type { PostRepoPort } from '../ports/post.repo.port';
-import { PostEntityDTOMapperPort } from '../ports/post.entity-mapper.dto';
+import { PostEntityDTOMapperPort } from '../ports/post.mapper.port';
 
 // Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';

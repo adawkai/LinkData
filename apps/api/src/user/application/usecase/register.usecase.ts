@@ -3,7 +3,7 @@ import { TOKENS } from '@/_shared/application/tokens';
 
 // Ports
 import type { UserRepoPort } from '../port/user.repo.port';
-import { UserEntityDTOMapperPort } from '../port/user.entity-mapper.port';
+import { UserEntityDTOMapperPort } from '../port/user.mapper.port';
 import {
   TOKEN_SIGNER,
   type TokenSigner,
