@@ -2,7 +2,7 @@ import { FollowEntity } from '@/follow/domain/follow.entity';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
 import { UserEntity } from '@/user/domain/entity/user.entity';
 
-export interface FollowRepo {
+export interface FollowRepoPort {
   create(follow: FollowEntity): Promise<void>;
   delete(follow: FollowEntity): Promise<void>;
   findFollowByFollowerIdAndFollowingId(

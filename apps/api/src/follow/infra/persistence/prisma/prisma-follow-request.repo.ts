@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
-import { FollowRequestRepo } from '@/follow/application/ports/follow-request-repo.port';
+import { FollowRequestRepoPort } from '@/follow/application/ports/follow-request.repo.port';
 import { FollowRequestEntity } from '@/follow/domain/follow-request.entity';
 import { FollowRequestDatabaseError } from '@/follow/domain/errors';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
-export class PrismaFollowRequestRepo implements FollowRequestRepo {
+export class PrismaFollowRequestRepo implements FollowRequestRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(followRequest: FollowRequestEntity) {

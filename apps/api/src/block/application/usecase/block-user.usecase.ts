@@ -1,26 +1,35 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import { assertCanBlock } from '../../domain/block.rules';
-import type { BlockRepo } from '../port/block-repo';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { BlockTargetBodyDTO } from '../../interface/dto/block-target.body.dto';
+
+// Ports
+import type { BlockRepoPort } from '@/block/application/port/block.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
 
 // Errors
 import { UserNotFoundError } from '@/user/domain/errors';
-import { AlreadyBlockedError } from '@/block/domain/errors';
+import {
+  AlreadyBlockedError,
+  CannotBlockYourselfError,
+} from '@/block/domain/errors';
+
+// Entities, Value Objects, && DTOs
 import { BlockEntity } from '@/block/domain/block.entity';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { BlockTargetBodyDTO, BlockTargetResponseDTO } from '@social/shared';
 
 @Injectable()
 export class BlockUserUseCase {
   constructor(
     @Inject(TOKENS.BLOCK_REPO)
-    private readonly blockRepo: BlockRepo,
+    private readonly blockRepo: BlockRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
-  async execute(blockerId: UserId, input: BlockTargetBodyDTO) {
+  async execute(
+    blockerId: UserId,
+    input: BlockTargetBodyDTO,
+  ): Promise<BlockTargetResponseDTO> {
     const targetId = UserId.from(input.targetId);
 
     // Validate users
@@ -30,7 +39,9 @@ export class BlockUserUseCase {
     const targeter = await this.userRepo.findById(targetId);
     if (!targeter) throw new UserNotFoundError();
 
-    assertCanBlock({ blocker, targeter });
+    if (blocker.id === targeter.id) {
+      throw new CannotBlockYourselfError();
+    }
 
     let block = await this.blockRepo.findBlockByBlockerIdAndBlockedId(
       blockerId,

@@ -1,20 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { FollowRepo } from '../ports/follow-repo.port';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { UnFollowTargetBodyDTO } from '@/follow/interface/dto/follow-target.body.dto';
-import { UnFollowTargetResponseDTO } from '@/follow/interface/dto/follow-target.response.dto';
+
+// Ports
+import type { FollowRepoPort } from '../ports/follow.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
 import { FollowNotFoundError } from '@/follow/domain/errors';
+
+// Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import {
+  UnFollowTargetBodyDTO,
+  UnFollowTargetResponseDTO,
+} from '@social/shared';
 
 @Injectable()
 export class UnfollowUserUseCase {
   constructor(
     @Inject(TOKENS.FOLLOW_REPO)
-    private readonly followRepo: FollowRepo,
+    private readonly followRepo: FollowRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(

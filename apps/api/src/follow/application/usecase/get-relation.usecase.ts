@@ -1,26 +1,24 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { FollowRepo } from '../ports/follow-repo.port';
-import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
-import type { BlockRepo } from '@/block/application/port/block-repo';
+
+// Ports
+import type { FollowRepoPort } from '../ports/follow.repo.port';
+import type { FollowRequestRepoPort } from '../ports/follow-request.repo.port';
+import type { BlockRepoPort } from '@/block/application/port/block.repo.port';
+
+// Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';
-
-export type RelationStatus = 'NONE' | 'FOLLOWING' | 'REQUESTED';
-
-export interface RelationResponseDTO {
-  followStatus: RelationStatus;
-  blocked: boolean;
-}
+import { RelationStatus, RelationResponseDTO } from '@social/shared';
 
 @Injectable()
 export class GetRelationUseCase {
   constructor(
     @Inject(TOKENS.FOLLOW_REPO)
-    private readonly followRepo: FollowRepo,
+    private readonly followRepo: FollowRepoPort,
     @Inject(TOKENS.FOLLOW_REQUEST_REPO)
-    private readonly followRequestRepo: FollowRequestRepo,
+    private readonly followRequestRepo: FollowRequestRepoPort,
     @Inject(TOKENS.BLOCK_REPO)
-    private readonly blockRepo: BlockRepo,
+    private readonly blockRepo: BlockRepoPort,
   ) {}
 
   async execute(
@@ -42,11 +40,11 @@ export class GetRelationUseCase {
       ),
     ]);
 
-    let followStatus: RelationStatus = 'NONE';
+    let followStatus: RelationStatus = RelationStatus.NONE;
     if (follow) {
-      followStatus = 'FOLLOWING';
+      followStatus = RelationStatus.FOLLOWING;
     } else if (request) {
-      followStatus = 'REQUESTED';
+      followStatus = RelationStatus.REQUESTED;
     }
 
     return {

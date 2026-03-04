@@ -1,16 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
-
 import { TOKENS } from '@/_shared/application/tokens';
-import { type UserRepo } from '../port/user.repo';
+
+// Ports
+import type { UserRepoPort } from '../port/user.repo.port';
+import { UserEntityDTOMapperPort } from '../port/user.entity-mapper.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
+
+// Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';
-import { UserResponseDTO } from '../../interface/dto/user.response.dto';
-import { UserEntityMapper } from '../port/user.entity-mapper';
-import { UpdateProfileBodyDTO } from '../../interface/dto/update-profile.body.dto';
+import { UserResponseDTO, UpdateProfileBodyDTO } from '@social/shared';
 
 @Injectable()
 export class UpdateMyProfileUseCase {
-  constructor(@Inject(TOKENS.USER_REPO) private readonly users: UserRepo) {}
+  constructor(@Inject(TOKENS.USER_REPO) private readonly users: UserRepoPort) {}
 
   async execute(
     userId: UserId,
@@ -41,6 +45,6 @@ export class UpdateMyProfileUseCase {
 
     await this.users.upsert(user);
 
-    return UserEntityMapper.toDTO(user);
+    return UserEntityDTOMapperPort.toDTO(user);
   }
 }

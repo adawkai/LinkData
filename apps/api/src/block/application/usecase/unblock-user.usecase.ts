@@ -1,20 +1,26 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { BlockRepo } from '../port/block-repo';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { UnBlockTargetBodyDTO } from '../../interface/dto/block-target.body.dto';
+
+// Ports
+import type { BlockRepoPort } from '../port/block.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
-import { UnBlockTargetResponseDTO } from '@/block/interface/dto/block-target.response.dto';
 import { BlockNotFoundError } from '@/block/domain/errors';
+
+// Entities, Value Objects, && DTOs
+import { BlockEntity } from '@/block/domain/block.entity';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { UnBlockTargetBodyDTO, UnBlockTargetResponseDTO } from '@social/shared';
 
 @Injectable()
 export class UnblockUserUseCase {
   constructor(
     @Inject(TOKENS.BLOCK_REPO)
-    private readonly blockRepo: BlockRepo,
+    private readonly blockRepo: BlockRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(
@@ -29,10 +35,11 @@ export class UnblockUserUseCase {
     const target = await this.userRepo.findById(targetId);
     if (!target) throw new UserNotFoundError();
 
-    let block = await this.blockRepo.findBlockByBlockerIdAndBlockedId(
-      blockerId,
-      targetId,
-    );
+    let block: BlockEntity | null =
+      await this.blockRepo.findBlockByBlockerIdAndBlockedId(
+        blockerId,
+        targetId,
+      );
     if (!block) throw new BlockNotFoundError();
 
     await this.blockRepo.delete(block);

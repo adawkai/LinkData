@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from '../../../domain/entity/user.entity';
-import { UpsertUserType, UserRepo } from '../../../application/port/user.repo';
+import {
+  UpsertUserType,
+  UserRepoPort,
+} from '../../../application/port/user.repo.port';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
 import { UserPrismaMapper, PrismaUser } from './mappers/user.prisma-mapper';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
@@ -8,7 +11,7 @@ import { Email } from '@/user/domain/value-object/email.vo';
 import { Username } from '@/user/domain/value-object/username.vo';
 
 @Injectable()
-export class PrismaUserRepo implements UserRepo {
+export class PrismaUserRepo implements UserRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async upsert(user: UserEntity, type?: UpsertUserType): Promise<void> {

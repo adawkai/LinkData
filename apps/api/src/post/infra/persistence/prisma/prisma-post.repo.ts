@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
-import type { PostRepo } from '@/post/application/ports/post-repo.port';
+import type { PostRepoPort } from '@/post/application/ports/post.repo.port';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
 import { PostEntity } from '@/post/domain/post.entity';
 import {
@@ -9,7 +9,7 @@ import {
 } from '@/user/infra/persistence/prisma/mappers/user.prisma-mapper';
 
 @Injectable()
-export class PrismaPostRepo implements PostRepo {
+export class PrismaPostRepo implements PostRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(post: PostEntity): Promise<void> {

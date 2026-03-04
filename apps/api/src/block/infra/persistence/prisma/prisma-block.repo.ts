@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
-import type { BlockRepo } from '@/block/application/port/block-repo';
+import type { BlockRepoPort } from '@/block/application/port/block.repo.port';
 import { BlockEntity } from '@/block/domain/block.entity';
 import { BlockDatabaseError } from '@/block/domain/errors';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
 
 @Injectable()
-export class PrismaBlockRepo implements BlockRepo {
+export class PrismaBlockRepo implements BlockRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async exists(block: BlockEntity) {

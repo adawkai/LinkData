@@ -16,6 +16,12 @@ export enum UserRole {
   USER = "USER",
 }
 
+export enum Gender {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+  OTHER = "OTHER",
+}
+
 export class UserResponseDTO {
   @IsString()
   id!: string;
@@ -61,8 +67,8 @@ export class ProfileResponseDTO {
   company!: string;
   @IsString()
   bio!: string;
-  @IsString()
-  gender!: string;
+  @IsEnum(Gender)
+  gender!: Gender;
   @IsString()
   website!: string;
   @IsDate()

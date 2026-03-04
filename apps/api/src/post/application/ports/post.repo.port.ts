@@ -1,7 +1,7 @@
 import type { PostEntity } from '@/post/domain/post.entity';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
 
-export interface PostRepo {
+export interface PostRepoPort {
   create(post: PostEntity): Promise<void>;
   feed(
     userId: UserId,

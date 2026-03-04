@@ -1,21 +1,26 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { PostRepo } from '../ports/post-repo.port';
-import { UserId } from '@/user/domain/value-object/user-id.vo';
-import type { UserRepo } from '@/user/application/port/user.repo';
+
+// Ports
+import type { PostRepoPort } from '../ports/post.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserInactiveError, UserNotFoundError } from '@/user/domain/errors';
-import type { CreatePostBodyDTO } from '@/post/interface/dto/create-post.body.dto';
+import { PostEntityDTOMapperPort } from '../ports/post.entity-mapper.dto';
+
+// Entities, Value Objects, && DTOs
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { CreatePostBodyDTO, CreatePostResponseDTO } from '@social/shared';
 import { PostEntity } from '@/post/domain/post.entity';
-import { PostEntityMapper } from '../ports/post.entity-mapper';
-import { CreatePostResponseDTO } from '../../interface/dto/create-post.response.dto';
 
 @Injectable()
 export class CreatePostUseCase {
   constructor(
     @Inject(TOKENS.POST_REPO)
-    private readonly postRepo: PostRepo,
+    private readonly postRepo: PostRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(
@@ -36,7 +41,7 @@ export class CreatePostUseCase {
 
     return {
       ok: true,
-      post: PostEntityMapper.toDTO(post),
+      post: PostEntityDTOMapperPort.toDTO(post),
     };
   }
 }

@@ -1,15 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { PostRepo } from '../ports/post-repo.port';
+
+// Ports
+import type { PostRepoPort } from '../ports/post.repo.port';
+import { PostEntityDTOMapperPort } from '../ports/post.entity-mapper.dto';
+
+// Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';
-import { PostEntityMapper } from '../ports/post.entity-mapper';
-import { FeedResponseDTO } from '../../interface/dto/post.response.dto';
+import { PostListResponseDTO } from '@social/shared';
 
 @Injectable()
 export class GetFeedUseCase {
   constructor(
     @Inject(TOKENS.POST_REPO)
-    private readonly postRepo: PostRepo,
+    private readonly postRepo: PostRepoPort,
   ) {}
 
   async execute(
@@ -18,8 +22,8 @@ export class GetFeedUseCase {
       cursor?: string;
       take?: number;
     },
-  ): Promise<FeedResponseDTO> {
+  ): Promise<PostListResponseDTO> {
     const { items, nextCursor } = await this.postRepo.feed(userId, pagination);
-    return PostEntityMapper.toFeedDTO(items, nextCursor);
+    return PostEntityDTOMapperPort.toFeedDTO(items, nextCursor);
   }
 }

@@ -9,7 +9,7 @@ export type UpsertUserType =
   | 'PROFILE_ONLY'
   | 'NONE';
 
-export interface UserRepo {
+export interface UserRepoPort {
   upsert(user: UserEntity, type?: UpsertUserType): Promise<void>;
   findById(id: UserId): Promise<UserEntity | null>;
   findByEmail(email: Email): Promise<UserEntity | null>;

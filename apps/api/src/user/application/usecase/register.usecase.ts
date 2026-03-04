@@ -1,43 +1,39 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ConflictError } from '@/_shared/domain/errors';
-import { type UserRepo } from '../port/user.repo';
-import {
-  PASSWORD_HASHER,
-  type PasswordHasher,
-} from '@/_shared/application/security/password.hasher';
+import { TOKENS } from '@/_shared/application/tokens';
+
+// Ports
+import type { UserRepoPort } from '../port/user.repo.port';
+import { UserEntityDTOMapperPort } from '../port/user.entity-mapper.port';
 import {
   TOKEN_SIGNER,
   type TokenSigner,
 } from '@/_shared/application/security/token.signer';
-import { UserRegisterBodyDTO } from '../../interface/dto/user-register.body.dto';
 import {
-  UserRegisterResponseDTO,
-  UserRegisterErrorResponseDTO,
-} from '../../interface/dto/user-register.response.dto';
-import { Username } from '../../domain/value-object/username.vo';
-import { Email } from '../../domain/value-object/email.vo';
+  PASSWORD_HASHER,
+  type PasswordHasher,
+} from '@/_shared/application/security/password.hasher';
+
+// Errors
 import {
   EmailDuplicatedError,
-  InvalidEmailError,
-  InvalidUsernameError,
   UsernameDuplicatedError,
-} from '../../domain/errors';
-import { UserEntity } from '../../domain/entity/user.entity';
-import { TOKENS } from '@/_shared/application/tokens';
+} from '@/user/domain/errors';
 
-import { UserEntityMapper } from '../port/user.entity-mapper';
+// Entities, Value Objects, && DTOs
+import { UserEntity } from '@/user/domain/entity/user.entity';
+import { Username } from '@/user/domain/value-object/username.vo';
+import { Email } from '@/user/domain/value-object/email.vo';
+import { UserRegisterBodyDTO, UserRegisterResponseDTO } from '@social/shared';
 
 @Injectable()
 export class RegisterUseCase {
   constructor(
-    @Inject(TOKENS.USER_REPO) private readonly userRepo: UserRepo,
+    @Inject(TOKENS.USER_REPO) private readonly userRepo: UserRepoPort,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     @Inject(TOKEN_SIGNER) private readonly signer: TokenSigner,
   ) {}
 
-  async execute(
-    input: UserRegisterBodyDTO,
-  ): Promise<UserRegisterResponseDTO | UserRegisterErrorResponseDTO> {
+  async execute(input: UserRegisterBodyDTO): Promise<UserRegisterResponseDTO> {
     const username = Username.create(input.username);
     const email = Email.create(input.email);
     if (await this.userRepo.findByEmail(email))
@@ -64,7 +60,7 @@ export class RegisterUseCase {
       role: user.role,
     });
     return {
-      user: UserEntityMapper.toDTO(user),
+      user: UserEntityDTOMapperPort.toDTO(user),
       accessToken,
     };
   }

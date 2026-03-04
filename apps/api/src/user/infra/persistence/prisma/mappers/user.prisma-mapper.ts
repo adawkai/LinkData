@@ -1,6 +1,6 @@
 // infra/persistence/prisma/mappers/user.prisma-mapper.ts
-import { UserEntity } from '../../../../domain/entity/user.entity';
-import { ProfileEntity } from '../../../../domain/entity/profile.entity';
+import { UserEntity } from '@/user/domain/entity/user.entity';
+import { ProfileEntity } from '@/user/domain/entity/profile.entity';
 
 export type PrismaUser = {
   id: string;

@@ -1,17 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { TOKENS } from '@/_shared/application/tokens';
 
-import { type UserRepo } from '../port/user.repo';
-import { UserLoginBodyDTO } from '../../interface/dto/user-login.body.dto';
-import {
-  UserLoginErrorResponseDTO,
-  UserLoginResponseDTO,
-} from '../../interface/dto/user-login.response.dto';
-import { Email } from '../../domain/value-object/email.vo';
-import {
-  InvalidCredentialsError,
-  UserInactiveError,
-  UserNotFoundError,
-} from '../../domain/errors';
+// Ports
+import type { UserRepoPort } from '../port/user.repo.port';
+import { UserEntityDTOMapperPort } from '../port/user.entity-mapper.port';
 import {
   type TokenSigner,
   TOKEN_SIGNER,
@@ -20,22 +12,28 @@ import {
   PASSWORD_HASHER,
   type PasswordHasher,
 } from '@/_shared/application/security/password.hasher';
-import { TOKENS } from '@/_shared/application/tokens';
-import { Username } from '@/user/domain/value-object/username.vo';
 
-import { UserEntityMapper } from '../port/user.entity-mapper';
+// Errors
+import {
+  InvalidCredentialsError,
+  UserInactiveError,
+  UserNotFoundError,
+} from '@/user/domain/errors';
+
+// Entities, Value Objects, && DTOs
+import { Email } from '@/user/domain/value-object/email.vo';
+import { Username } from '@/user/domain/value-object/username.vo';
+import { UserLoginBodyDTO, UserLoginResponseDTO } from '@social/shared';
 
 @Injectable()
 export class LoginUseCase {
   constructor(
-    @Inject(TOKENS.USER_REPO) private readonly userRepo: UserRepo,
+    @Inject(TOKENS.USER_REPO) private readonly userRepo: UserRepoPort,
     @Inject(TOKEN_SIGNER) private readonly signer: TokenSigner,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
   ) {}
 
-  async execute(
-    input: UserLoginBodyDTO,
-  ): Promise<UserLoginResponseDTO | UserLoginErrorResponseDTO> {
+  async execute(input: UserLoginBodyDTO): Promise<UserLoginResponseDTO> {
     const isEmail = Email.isValid(input.usernameOrEmail);
     const user = isEmail
       ? await this.userRepo.findByEmail(Email.create(input.usernameOrEmail))
@@ -56,7 +54,7 @@ export class LoginUseCase {
     });
     return {
       accessToken,
-      user: UserEntityMapper.toDTO(user),
+      user: UserEntityDTOMapperPort.toDTO(user),
     };
   }
 }

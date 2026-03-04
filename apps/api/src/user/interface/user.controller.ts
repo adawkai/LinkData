@@ -11,17 +11,25 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
 
-import { GetByUserNameUseCase } from '../application/usecase/get-by-username.usecase';
-import { GetMeUseCase } from '../application/usecase/get-me.usecase';
-import { GetByIdUseCase } from '../application/usecase/get-by-id.usecase';
-import { ListUserUseCase } from '../application/usecase/list-user.usecase';
-import { UpdateMyProfileUseCase } from '../application/usecase/update-my-profile.usecase';
-import { Username } from '@/user/domain/value-object/username.vo';
-import { UserId } from '@/user/domain/value-object/user-id.vo';
+// Use Cases
+import { GetByUserNameUseCase } from '@/user/application/usecase/get-by-username.usecase';
+import { GetMeUseCase } from '@/user/application/usecase/get-me.usecase';
+import { GetByIdUseCase } from '@/user/application/usecase/get-by-id.usecase';
+import { ListUserUseCase } from '@/user/application/usecase/list-user.usecase';
+import { UpdateMyProfileUseCase } from '@/user/application/usecase/update-my-profile.usecase';
 import { GetUserPostsUseCase } from '@/post/application/use-cases/get-user-posts.usecase';
 import { ListFollowersUseCase } from '@/follow/application/usecase/list-followers.usecase';
 import { ListFollowingUseCase } from '@/follow/application/usecase/list-following.usecase';
-import type { UpdateProfileBodyDTO } from './dto/update-profile.body.dto';
+
+// Entities, Value Objects, && DTOs
+import { Username } from '@/user/domain/value-object/username.vo';
+import { UserId } from '@/user/domain/value-object/user-id.vo';
+import {
+  ListUserResponseDTO,
+  UpdateProfileBodyDTO,
+  UserResponseDTO,
+  PostListResponseDTO,
+} from '@social/shared';
 
 @Controller('users')
 export class UserController {
@@ -41,7 +49,7 @@ export class UserController {
     @Query('query') query: string,
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<ListUserResponseDTO> {
     return this.listUsers.execute(
       {
         cursor,
@@ -52,21 +60,24 @@ export class UserController {
   }
 
   @Get('by-username/:username')
-  byUsername(@Param('username') username: string) {
+  byUsername(@Param('username') username: string): Promise<UserResponseDTO> {
     const urname = Username.create(username);
     return this.getUserByUsername.execute(urname);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  me(@Req() req: any) {
+  me(@Req() req: any): Promise<UserResponseDTO> {
     Logger.log('me', req.user.userId);
     return this.getMe.execute(req.user.userId);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('me/profile')
-  updateMe(@Req() req: any, @Body() dto: UpdateProfileBodyDTO) {
+  updateMe(
+    @Req() req: any,
+    @Body() dto: UpdateProfileBodyDTO,
+  ): Promise<UserResponseDTO> {
     return this.updateMyProfile.execute(req.user.userId, dto);
   }
 
@@ -75,7 +86,7 @@ export class UserController {
     @Param('userId') userId: string,
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<PostListResponseDTO> {
     return this.getUserPosts.execute(UserId.from(userId), {
       cursor,
       take: take ? parseInt(take, 10) : 10,
@@ -87,7 +98,7 @@ export class UserController {
     @Param('userId') userId: string,
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<ListUserResponseDTO> {
     return this.listFollowers.execute(UserId.from(userId), {
       cursor,
       take: take ? parseInt(take, 10) : 10,
@@ -99,7 +110,7 @@ export class UserController {
     @Param('userId') userId: string,
     @Query('cursor') cursor?: string,
     @Query('take') take?: string,
-  ) {
+  ): Promise<ListUserResponseDTO> {
     return this.listFollowing.execute(UserId.from(userId), {
       cursor,
       take: take ? parseInt(take, 10) : 10,

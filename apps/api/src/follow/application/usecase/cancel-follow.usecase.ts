@@ -1,20 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { CancelFollowBodyDTO } from '@/follow/interface/dto/follow-target.body.dto';
-import { CancelFollowResponseDTO } from '@/follow/interface/dto/follow-target.response.dto';
+
+// Ports
+import type { FollowRequestRepoPort } from '@/follow/application/ports/follow-request.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
-import { FollowRequestNotFoundError } from '../../domain/errors';
+import { FollowRequestNotFoundError } from '@/follow/domain/errors';
+
+// Entities, Value Objects, && DTOs
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { CancelFollowBodyDTO, CancelFollowResponseDTO } from '@social/shared';
 
 @Injectable()
 export class CancelFollowUseCase {
   constructor(
     @Inject(TOKENS.FOLLOW_REQUEST_REPO)
-    private readonly followRequestRepo: FollowRequestRepo,
+    private readonly followRequestRepo: FollowRequestRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(

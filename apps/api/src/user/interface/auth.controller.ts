@@ -1,8 +1,16 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { RegisterUseCase } from '../application/usecase/register.usecase';
-import { LoginUseCase } from '../application/usecase/login.usecase';
-import type { UserRegisterBodyDTO } from './dto/user-register.body.dto';
-import type { UserLoginBodyDTO } from './dto/user-login.body.dto';
+
+// Use Cases
+import { RegisterUseCase } from '@/user/application/usecase/register.usecase';
+import { LoginUseCase } from '@/user/application/usecase/login.usecase';
+
+// DTOs
+import {
+  UserRegisterBodyDTO,
+  UserLoginBodyDTO,
+  UserRegisterResponseDTO,
+  UserLoginResponseDTO,
+} from '@social/shared';
 
 @Controller('auth')
 export class AuthController {
@@ -12,7 +20,9 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  registerUser(@Body() dto: UserRegisterBodyDTO) {
+  registerUser(
+    @Body() dto: UserRegisterBodyDTO,
+  ): Promise<UserRegisterResponseDTO> {
     const input = {
       email: dto.email,
       username: dto.username,
@@ -23,7 +33,7 @@ export class AuthController {
   }
 
   @Post('login')
-  loginUser(@Body() dto: UserLoginBodyDTO) {
+  loginUser(@Body() dto: UserLoginBodyDTO): Promise<UserLoginResponseDTO> {
     const input = {
       usernameOrEmail: dto.usernameOrEmail,
       password: dto.password,

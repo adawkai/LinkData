@@ -1,8 +1,9 @@
 import { PostEntity } from '../../domain/post.entity';
-import { PostResponseDTO } from '../../interface/dto/post.response.dto';
-import { UserEntityMapper } from '@/user/application/port/user.entity-mapper';
+import { UserEntityDTOMapperPort } from '@/user/application/port/user.entity-mapper.port';
 
-export class PostEntityMapper {
+import { PostResponseDTO } from '@social/shared';
+
+export class PostEntityDTOMapperPort {
   static toDTO(post: PostEntity): PostResponseDTO {
     if (!post.author) {
       throw new Error('Post author must be populated to map to DTO');
@@ -14,7 +15,7 @@ export class PostEntityMapper {
       content: post.content,
       createdAt: post.createdAt,
       updatedAt: post.updatedAt,
-      author: UserEntityMapper.toDTO(post.author),
+      author: UserEntityDTOMapperPort.toDTO(post.author),
     };
   }
 

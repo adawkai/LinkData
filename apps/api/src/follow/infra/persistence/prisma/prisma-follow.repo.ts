@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '@/_shared/infra/prisma/prisma.service';
-import { FollowRepo } from '@/follow/application/ports/follow-repo.port';
+import { FollowRepoPort } from '@/follow/application/ports/follow.repo.port';
 import { FollowEntity } from '@/follow/domain/follow.entity';
 import { FollowDatabaseError } from '@/follow/domain/errors';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
@@ -10,7 +10,7 @@ import {
 } from '@/user/infra/persistence/prisma/mappers/user.prisma-mapper';
 
 @Injectable()
-export class PrismaFollowRepo implements FollowRepo {
+export class PrismaFollowRepo implements FollowRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async listFollowers(
@@ -23,7 +23,14 @@ export class PrismaFollowRepo implements FollowRepo {
     const follows = await this.prisma.follow.findMany({
       where: { followingId: userId.toString() },
       take: takeWithExtra,
-      cursor: cursor ? { followerId_followingId: { followerId: cursor, followingId: userId.toString() } } : undefined,
+      cursor: cursor
+        ? {
+            followerId_followingId: {
+              followerId: cursor,
+              followingId: userId.toString(),
+            },
+          }
+        : undefined,
       skip: cursor ? 1 : 0,
       include: {
         follower: {
@@ -59,7 +66,14 @@ export class PrismaFollowRepo implements FollowRepo {
     const follows = await this.prisma.follow.findMany({
       where: { followerId: userId.toString() },
       take: takeWithExtra,
-      cursor: cursor ? { followerId_followingId: { followerId: userId.toString(), followingId: cursor } } : undefined,
+      cursor: cursor
+        ? {
+            followerId_followingId: {
+              followerId: userId.toString(),
+              followingId: cursor,
+            },
+          }
+        : undefined,
       skip: cursor ? 1 : 0,
       include: {
         following: {

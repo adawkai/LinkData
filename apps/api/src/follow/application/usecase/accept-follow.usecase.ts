@@ -1,27 +1,32 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { FollowRepo } from '../ports/follow-repo.port';
-import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { AcceptFollowBodyDTO } from '@/follow/interface/dto/accept-follow.body.dto';
-import { AcceptFollowResponseDTO } from '@/follow/interface/dto/accept-follow.response';
+
+// Ports
+import type { FollowRepoPort } from '../ports/follow.repo.port';
+import type { FollowRequestRepoPort } from '../ports/follow-request.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
 import {
   AlreadyFollowedError,
   FollowRequestNotFoundError,
 } from '@/follow/domain/errors';
-import { FollowEntity } from '../../domain/follow.entity';
+
+// Entities, Value Objects, && DTOs
+import { FollowEntity } from '@/follow/domain/follow.entity';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import { AcceptFollowBodyDTO, AcceptFollowResponseDTO } from '@social/shared';
 
 @Injectable()
 export class AcceptFollowUseCase {
   constructor(
     @Inject(TOKENS.FOLLOW_REPO)
-    private readonly followRepo: FollowRepo,
+    private readonly followRepo: FollowRepoPort,
     @Inject(TOKENS.FOLLOW_REQUEST_REPO)
-    private readonly followRequestRepo: FollowRequestRepo,
+    private readonly followRequestRepo: FollowRequestRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(

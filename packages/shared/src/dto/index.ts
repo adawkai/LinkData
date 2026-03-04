@@ -12,10 +12,13 @@ export {
   UserRegisterErrorResponseDTO,
 } from "./user/user-register.response.dto";
 export {
+  Gender,
+  UserRole,
   UserResponseDTO,
   ProfileResponseDTO,
   ListUsersResponseDTO,
 } from "./user/user.response.dto";
+export { ListUserResponseDTO } from "./user/list-user.response.dto";
 
 // Follow DTOs
 export {
@@ -34,6 +37,7 @@ export {
   CancelFollowBodyDTO,
 } from "./follow/follow-target.body.dto";
 export {
+  FollowTargetStatus,
   FollowTargetResponseDTO,
   UnFollowTargetResponseDTO,
   CancelFollowResponseDTO,
@@ -41,6 +45,10 @@ export {
   UnFollowTargetErrorResponseDTO,
   CancelFollowErrorResponseDTO,
 } from "./follow/follow-target.response.dto";
+export {
+  RelationStatus,
+  RelationResponseDTO,
+} from "./follow/relation.response.dto";
 
 // Post DTOs
 export { CreatePostBodyDTO } from "./post/create-post.body.dto";
@@ -49,6 +57,7 @@ export {
   CreatePostErrorResponseDTO,
 } from "./post/create-post.response.dto";
 export { PostResponseDTO } from "./post/post.response.dto";
+export { PostListResponseDTO } from "./post/post-list.response.dto";
 
 // BlockDTOs
 export {

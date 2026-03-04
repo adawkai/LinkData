@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@/_shared/interface/guards/jwt-auth.guard';
-import type {
-  BlockTargetBodyDTO,
-  UnBlockTargetBodyDTO,
-} from './dto/block-target.body.dto';
+
+// Use Cases
 import { BlockUserUseCase } from '../application/usecase/block-user.usecase';
 import { UnblockUserUseCase } from '../application/usecase/unblock-user.usecase';
+
+// DTOs
+import { BlockTargetBodyDTO, UnBlockTargetBodyDTO } from '@social/shared';
 
 @Controller('blocks')
 @UseGuards(JwtAuthGuard)

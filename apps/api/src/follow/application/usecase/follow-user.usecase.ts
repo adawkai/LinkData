@@ -1,28 +1,34 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '@/_shared/application/tokens';
-import type { FollowRepo } from '../ports/follow-repo.port';
-import type { UserRepo } from '@/user/application/port/user.repo';
-import { FollowTargetBodyDTO } from '@/follow/interface/dto/follow-target.body.dto';
-import { FollowTargetResponseDTO } from '@/follow/interface/dto/follow-target.response.dto';
+
+// Ports
+import type { FollowRepoPort } from '../ports/follow.repo.port';
+import type { FollowRequestRepoPort } from '../ports/follow-request.repo.port';
+import type { UserRepoPort } from '@/user/application/port/user.repo.port';
+
+// Errors
 import { UserNotFoundError } from '@/user/domain/errors';
-import {
-  AlreadyFollowedError,
-  UserIsPrivateError,
-} from '@/follow/domain/errors';
+import { AlreadyFollowedError } from '@/follow/domain/errors';
+
+// Entities, Value Objects, && DTOs
 import { FollowEntity } from '@/follow/domain/follow.entity';
 import { FollowRequestEntity } from '@/follow/domain/follow-request.entity';
-import type { FollowRequestRepo } from '../ports/follow-request-repo.port';
 import { UserId } from '@/user/domain/value-object/user-id.vo';
+import {
+  FollowTargetBodyDTO,
+  FollowTargetResponseDTO,
+  FollowTargetStatus,
+} from '@social/shared';
 
 @Injectable()
 export class FollowUserUseCase {
   constructor(
     @Inject(TOKENS.FOLLOW_REPO)
-    private readonly followRepo: FollowRepo,
+    private readonly followRepo: FollowRepoPort,
     @Inject(TOKENS.FOLLOW_REQUEST_REPO)
-    private readonly followRequestRepo: FollowRequestRepo,
+    private readonly followRequestRepo: FollowRequestRepoPort,
     @Inject(TOKENS.USER_REPO)
-    private readonly userRepo: UserRepo,
+    private readonly userRepo: UserRepoPort,
   ) {}
 
   async execute(
@@ -59,14 +65,14 @@ export class FollowUserUseCase {
         requestedId: targetId,
       });
       await this.followRequestRepo.create(followRequest);
-      return { ok: true, status: 'REQUESTED' };
+      return { ok: true, status: FollowTargetStatus.REQUESTED };
     } else {
       follow = FollowEntity.create({
         followerId,
         followingId: targetId,
       });
       await this.followRepo.create(follow);
-      return { ok: true, status: 'FOLLOWING' };
+      return { ok: true, status: FollowTargetStatus.FOLLOWING };
     }
   }
 }
