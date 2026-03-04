@@ -30,13 +30,13 @@ export class BlockUserUseCase {
     blockerId: UserId,
     input: BlockTargetBodyDTO,
   ): Promise<BlockTargetResponseDTO> {
-    const targetId = UserId.from(input.targetId);
+    const targetUserId = UserId.from(input.targetUserId);
 
     // Validate users
     const blocker = await this.userRepo.findById(blockerId);
     if (!blocker) throw new UserNotFoundError();
 
-    const targeter = await this.userRepo.findById(targetId);
+    const targeter = await this.userRepo.findById(targetUserId);
     if (!targeter) throw new UserNotFoundError();
 
     if (blocker.id === targeter.id) {
@@ -45,14 +45,14 @@ export class BlockUserUseCase {
 
     let block = await this.blockRepo.findBlockByBlockerIdAndBlockedId(
       blockerId,
-      targetId,
+      targetUserId,
     );
 
     if (block) throw new AlreadyBlockedError();
 
     block = BlockEntity.create({
       blockerId: blockerId,
-      blockedId: targetId,
+      blockedId: targetUserId,
     });
 
     await this.blockRepo.create(block);

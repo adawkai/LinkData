@@ -27,18 +27,18 @@ export class UnblockUserUseCase {
     blockerId: UserId,
     input: UnBlockTargetBodyDTO,
   ): Promise<UnBlockTargetResponseDTO> {
-    const targetId = UserId.from(input.targetId);
+    const targetUserId = UserId.from(input.targetUserId);
 
     const blocker = await this.userRepo.findById(blockerId);
     if (!blocker) throw new UserNotFoundError();
 
-    const target = await this.userRepo.findById(targetId);
+    const target = await this.userRepo.findById(targetUserId);
     if (!target) throw new UserNotFoundError();
 
     let block: BlockEntity | null =
       await this.blockRepo.findBlockByBlockerIdAndBlockedId(
         blockerId,
-        targetId,
+        targetUserId,
       );
     if (!block) throw new BlockNotFoundError();
 

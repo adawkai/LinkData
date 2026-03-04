@@ -20,11 +20,11 @@ import { PostMapper } from "../post/post.mapper";
 import type { ListPostResponse, Post, PostError } from "../post/post.types";
 import type {
   User,
-  UpdateProfileDto,
   ListUserResponse,
   UserResponse,
   UserError,
 } from "./user.types";
+import { UpdateProfileBodyDTO } from "@social/shared";
 
 type PaginatedState<T> = {
   items: T[];
@@ -243,7 +243,7 @@ export const fetchUserByUsername = createAsyncThunk<User, { username: string }>(
   }
 );
 
-export const updateMyProfile = createAsyncThunk<User, UpdateProfileDto>(
+export const updateMyProfile = createAsyncThunk<User, UpdateProfileBodyDTO>(
   "users/updateMyProfile",
   async (dto, { rejectWithValue }) => {
     try {

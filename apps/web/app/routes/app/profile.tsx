@@ -181,7 +181,7 @@ export default function ProfileRoute() {
   if (userStatus === "loading" && !user)
     return <div className="p-4">Loading profile…</div>;
   if (userStatus === "failed" && !user)
-    return <div className="p-4 text-destructive">{userError}</div>;
+    return <div className="p-4 text-destructive">{userError?.message}</div>;
   if (!user) return <div className="p-4">User not found.</div>;
 
   const isMe = me?.id === user.id;

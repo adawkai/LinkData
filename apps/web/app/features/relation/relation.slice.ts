@@ -1,13 +1,33 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-import type {
-  FollowActionResultRes,
-  FollowRequestDecisionDto,
-  FollowTargetDto,
-} from "@social/shared/models/follow";
-import type { BlockTargetDto } from "@social/shared/models/block";
-
 import { api, getApiErrorMessage } from "../../shared/api/client";
+
+import type {
+  AcceptFollowBodyDTO,
+  AcceptFollowResponseDTO,
+  BlockTargetBodyDTO,
+  BlockTargetResponseDTO,
+  FollowTargetBodyDTO,
+  FollowTargetResponseDTO,
+  RejectFollowBodyDTO,
+  RejectFollowResponseDTO,
+  RelationResponseDTO,
+  UnBlockTargetBodyDTO,
+  UnBlockTargetResponseDTO,
+  UnFollowTargetBodyDTO,
+  UnFollowTargetResponseDTO,
+} from "@social/shared";
+import type {
+  AcceptFollowRequestResponse,
+  BlockTargetResponse,
+  FollowTargetError,
+  FollowTargetResponse,
+  RejectFollowRequestResponse,
+  RelationResponse,
+  UnBlockTargetResponse,
+  UnFollowTargetResponse,
+} from "./relation.types";
+import type { FollowActionResultRes, FollowTargetDto } from "@social/shared";
 
 export type RelationStatus = "NONE" | "FOLLOWING" | "REQUESTED";
 
@@ -19,7 +39,7 @@ export type RelationState = {
 type RelationsSliceState = {
   byUserId: Record<string, RelationState | undefined>;
   status: "idle" | "loading" | "failed";
-  error: string | null;
+  error: FollowTargetError | null;
 };
 
 const initialState: RelationsSliceState = {
@@ -29,26 +49,40 @@ const initialState: RelationsSliceState = {
 };
 
 export const followUser = createAsyncThunk<
-  { targetUserId: string; result: FollowActionResultRes },
-  FollowTargetDto
+  { targetUserId: string; result: FollowTargetResponseDTO },
+  FollowTargetBodyDTO
 >("relations/follow", async (dto, { rejectWithValue }) => {
   try {
-    const res = await api.post<FollowActionResultRes>("/follow", dto);
+    const res = await api.post<FollowTargetResponse>("/follow", dto);
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
     return { targetUserId: dto.targetUserId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "FOLLOW_USER_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
 export const unfollowUser = createAsyncThunk<
-  { targetUserId: string },
-  FollowTargetDto
+  { targetUserId: string; result: UnFollowTargetResponseDTO },
+  UnFollowTargetBodyDTO
 >("relations/unfollow", async (dto, { rejectWithValue }) => {
   try {
-    await api.delete("/follow", { data: dto });
-    return { targetUserId: dto.targetUserId };
+    const res = await api.delete<UnFollowTargetResponse>("/follow", {
+      data: dto,
+    });
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
+    return { targetUserId: dto.targetUserId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "UNFOLLOW_USER_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
@@ -65,62 +99,104 @@ export const cancelFollowRequest = createAsyncThunk<
 });
 
 export const acceptFollowRequest = createAsyncThunk<
-  { requesterId: string },
-  FollowRequestDecisionDto
+  { requesterId: string; result: AcceptFollowResponseDTO },
+  AcceptFollowBodyDTO
 >("relations/acceptRequest", async (dto, { rejectWithValue }) => {
   try {
-    await api.post("/follow/requests/accept", dto);
-    return { requesterId: dto.requesterId };
+    const res = await api.post<AcceptFollowRequestResponse>(
+      "/follow/requests/accept",
+      dto
+    );
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
+    return { requesterId: dto.requesterId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "ACCEPT_FOLLOW_REQUEST_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
 export const fetchRelation = createAsyncThunk<
-  { targetUserId: string; rel: RelationState },
+  { targetUserId: string; rel: RelationResponseDTO },
   { targetUserId: string }
 >("relations/fetch", async ({ targetUserId }, { rejectWithValue }) => {
   try {
-    const res = await api.get<RelationState>(`/follow/${targetUserId}/status`);
+    const res = await api.get<RelationResponse>(
+      `/follow/${targetUserId}/status`
+    );
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
     return { targetUserId, rel: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "FETCH_RELATION_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
 export const rejectFollowRequest = createAsyncThunk<
-  { requesterId: string },
-  FollowRequestDecisionDto
+  { requesterId: string; result: RejectFollowResponseDTO },
+  RejectFollowBodyDTO
 >("relations/rejectRequest", async (dto, { rejectWithValue }) => {
   try {
-    await api.post("/follow/requests/reject", dto);
-    return { requesterId: dto.requesterId };
+    const res = await api.post<RejectFollowRequestResponse>(
+      "/follow/requests/reject",
+      dto
+    );
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
+    return { requesterId: dto.requesterId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "REJECT_FOLLOW_REQUEST_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
 export const blockUser = createAsyncThunk<
-  { targetUserId: string },
-  BlockTargetDto
+  { targetUserId: string; result: BlockTargetResponseDTO },
+  BlockTargetBodyDTO
 >("relations/block", async (dto, { rejectWithValue }) => {
   try {
     await api.post("/blocks", dto);
-    return { targetUserId: dto.targetUserId };
+    const res = await api.post<BlockTargetResponse>("/blocks", dto);
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
+    return { targetUserId: dto.targetUserId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "BLOCK_USER_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
 export const unblockUser = createAsyncThunk<
-  { targetUserId: string },
-  BlockTargetDto
+  { targetUserId: string; result: UnBlockTargetResponseDTO },
+  UnBlockTargetBodyDTO
 >("relations/unblock", async (dto, { rejectWithValue }) => {
   try {
     await api.delete("/blocks", { data: dto });
-    return { targetUserId: dto.targetUserId };
+    const res = await api.delete<UnBlockTargetResponse>("/blocks", {
+      data: dto,
+    });
+    if ("error" in res.data) {
+      return rejectWithValue(res.data.error);
+    }
+    return { targetUserId: dto.targetUserId, result: res.data };
   } catch (e) {
-    return rejectWithValue(getApiErrorMessage(e));
+    return rejectWithValue({
+      code: "UNBLOCK_USER_FAILED",
+      message: getApiErrorMessage(e),
+    });
   }
 });
 
@@ -137,7 +213,7 @@ const relationsSlice = createSlice({
       state,
       action: {
         payload: { targetUserId: string; rel: Partial<RelationState> };
-      },
+      }
     ) {
       const current = state.byUserId[action.payload.targetUserId] ?? {
         followStatus: "NONE" as const,
@@ -156,7 +232,7 @@ const relationsSlice = createSlice({
     };
     const fail = (state: RelationsSliceState, action: { payload: unknown }) => {
       state.status = "failed";
-      state.error = (action.payload as string) ?? "Action failed";
+      state.error = action.payload as FollowTargetError;
     };
     const done = (state: RelationsSliceState) => {
       state.status = "idle";

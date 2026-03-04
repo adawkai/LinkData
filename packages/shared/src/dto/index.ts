@@ -51,6 +51,7 @@ export {
 export {
   RelationStatus,
   RelationResponseDTO,
+  RelationErrorResponseDTO,
 } from "./follow/relation.response.dto";
 
 // Post DTOs

@@ -50,7 +50,9 @@ export default function SettingsRoute() {
             />
           </div>
 
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="text-sm text-destructive">{error.message}</p>
+          ) : null}
 
           <div className="flex justify-end">
             <Button onClick={onSave} disabled={status === "loading"}>

@@ -84,7 +84,9 @@ export default function FeedRoute() {
               Post
             </Button>
           </div>
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="text-sm text-destructive">{error?.message}</p>
+          ) : null}
         </CardContent>
       </Card>
 

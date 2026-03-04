@@ -64,7 +64,7 @@ export default function OnboardingRoute() {
     e.preventDefault();
     if (!me) return;
 
-    let avatarUrl = me.profile?.avatarUrl ?? null;
+    let avatarUrl = me.profile?.avatarUrl;
     try {
       if (file) {
         setUploading(true);
@@ -129,7 +129,9 @@ export default function OnboardingRoute() {
               />
             </div>
 
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {error ? (
+              <p className="text-sm text-destructive">{error?.message}</p>
+            ) : null}
 
             <div className="flex items-center justify-end gap-2">
               <Button
