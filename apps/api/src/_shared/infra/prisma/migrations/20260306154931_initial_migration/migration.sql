@@ -34,6 +34,7 @@ CREATE TABLE "Profile" (
     "birthDate" TIMESTAMP(3),
     "location" TEXT,
     "avatarUrl" TEXT,
+    "coverUrl" TEXT,
     "contact" TEXT,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

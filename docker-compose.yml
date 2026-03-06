@@ -26,6 +26,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     environment:
+      ENVIRONMENT: development
       DATABASE_URL: postgres://admin:admin123@db:5432/linktree
       JWT_ACCESS_SECRET: dev_jwt_secret_change_me
     ports:
@@ -34,11 +35,6 @@ services:
       - .:/app
       - /app/node_modules
       - /app/apps/api/node_modules
-    command: >
-      sh -c "pnpm --filter @social/api exec prisma generate && 
-             pnpm --filter @social/api exec prisma migrate deploy && 
-             pnpm --filter @social/api exec prisma db seed &&
-             pnpm --filter @social/api start:dev"
     depends_on:
       - db
       - localstack

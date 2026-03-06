@@ -6,11 +6,12 @@ import { PostEntity } from '@/post/domain/post.entity';
 export const seedPost = async (
   prisma: PrismaClient,
   users: UserEntity[],
-  postCount = 2,
+  postCount = 4,
 ) => {
+  console.log('Seeding posts...');
   const posts: PostEntity[] = [];
-  for (const user of users) {
-    for (let i = 0; i < postCount; i++) {
+  for (let i = 0; i < postCount; i++) {
+    for (const user of users) {
       const content = faker.lorem.sentence();
       const post = PostEntity.create({
         author: user,
