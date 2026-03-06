@@ -6,6 +6,7 @@ import { Email } from '@/user/domain/value-object/email.vo';
 import { Username } from '@/user/domain/value-object/username.vo';
 
 export const seedUser = async (prisma: PrismaClient, userCount: number) => {
+  console.log('Seeding users...');
   const users: UserEntity[] = [];
   for (let i = 0; i < userCount; i += 1) {
     const firstName = faker.person.firstName();
@@ -40,6 +41,7 @@ export const seedUser = async (prisma: PrismaClient, userCount: number) => {
     const birthDate = faker.date.birthdate();
     const location = faker.location.city();
     const avatarUrl = faker.image.avatar();
+    const coverUrl = faker.image.urlPicsumPhotos({ width: 1200, height: 300 });
     const contact = faker.phone.number();
 
     await user.updateProfile({
@@ -51,6 +53,7 @@ export const seedUser = async (prisma: PrismaClient, userCount: number) => {
       birthDate,
       location,
       avatarUrl,
+      coverUrl,
       contact,
     });
 
@@ -84,6 +87,7 @@ export const seedUser = async (prisma: PrismaClient, userCount: number) => {
         birthDate: user.profile.birthDate,
         location: user.profile.location,
         avatarUrl: user.profile.avatarUrl,
+        coverUrl: user.profile.coverUrl,
         contact: user.profile.contact,
         createdAt: user.profile.createdAt,
         updatedAt: user.profile.updatedAt,

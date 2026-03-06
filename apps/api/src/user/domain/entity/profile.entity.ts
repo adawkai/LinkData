@@ -11,6 +11,7 @@ export type CreateProfileProps = {
   birthDate?: Date;
   location?: string;
   avatarUrl?: string;
+  coverUrl?: string;
   contact?: string;
 };
 
@@ -26,6 +27,7 @@ export type RehydrateProfileProps = {
   birthDate?: Date;
   location?: string;
   avatarUrl?: string;
+  coverUrl?: string;
   contact?: string;
 };
 
@@ -38,6 +40,7 @@ export type UpdateProfileProps = {
   birthDate?: Date;
   location?: string;
   avatarUrl?: string;
+  coverUrl?: string;
   contact?: string;
 };
 
@@ -55,6 +58,7 @@ export class ProfileEntity {
     public location?: string,
     public contact?: string,
     public avatarUrl?: string,
+    public coverUrl?: string,
   ) {}
 
   static empty(): ProfileEntity {
@@ -77,6 +81,7 @@ export class ProfileEntity {
       data.location,
       data.contact,
       data.avatarUrl,
+      data.coverUrl,
     );
   }
 
@@ -94,6 +99,7 @@ export class ProfileEntity {
       data.location,
       data.contact,
       data.avatarUrl,
+      data.coverUrl,
     );
   }
 
@@ -107,6 +113,7 @@ export class ProfileEntity {
     this.location = data.location ?? this.location;
     this.contact = data.contact ?? this.contact;
     this.avatarUrl = data.avatarUrl ?? this.avatarUrl;
+    this.coverUrl = data.coverUrl ?? this.coverUrl;
     this.updatedAt = new Date();
   }
 }

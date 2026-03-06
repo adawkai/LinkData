@@ -67,6 +67,7 @@ model Profile {
   birthDate DateTime?
   location  String?
   avatarUrl String?
+  coverUrl  String?
   contact   String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

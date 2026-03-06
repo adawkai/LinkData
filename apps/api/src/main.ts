@@ -3,9 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from '@/_shared/interface/filters/domain-exception.filter';
+import { main } from './_shared/infra/prisma/seed';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  if (process.env.ENVIRONMENT === 'development') {
+    await main();
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
