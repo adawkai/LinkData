@@ -10,4 +10,7 @@ export const TOKENS = {
   FOLLOW_REPO: Symbol('FOLLOW_REPO'),
   FOLLOW_REQUEST_REPO: Symbol('FOLLOW_REQUEST_REPO'),
   POST_REPO: Symbol('POST_REPO'),
+
+  // KAFKA
+  KAFKA_SERVICE: Symbol('KAFKA_SERVICE'),
 } as const;

@@ -50,8 +50,9 @@ model User {
 
   profile Profile?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  notifications Notification[]
 
   @@index([email])
   @@index([username])
@@ -129,4 +130,20 @@ model Post {
   updatedAt DateTime @updatedAt
 
   @@index([authorId, createdAt])
+}
+
+model Notification {
+  id      String @id @default(uuid())
+  actorId String
+  author  User   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  type      String
+  entity_id String
+  is_read   Boolean @default(false)
+
+  eventId     String
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
